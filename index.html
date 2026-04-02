@@ -95,7 +95,7 @@
         <!-- ========================================== -->
         <footer class="mt-auto pt-8 sm:pt-12 pb-2 text-center w-full">
             <p class="text-gray-200 text-xs sm:text-sm font-medium tracking-wide" style="text-shadow: 1px 1px 4px rgba(0,0,0,0.9);">
-                &copy; 2026 Desarrollado por Juan Miguel Rios Redondo<br class="block sm:hidden"> | Suite Tiro Maestro
+                &copy; <span id="anio-actual"></span> Desarrollado por Juan Miguel Rios Redondo<br class="block sm:hidden"> | Suite Tiro Maestro
             </p>
         </footer>
 
@@ -128,6 +128,9 @@
     <!-- 3. LÓGICA DE PROGRAMACIÓN (JAVASCRIPT)     -->
     <!-- ========================================== -->
     <script>
+        // Establecer el año actual de forma automática al cargar la página
+        document.getElementById('anio-actual').textContent = new Date().getFullYear();
+
         // Esta función se ejecuta al hacer clic en un botón del menú
         function abrirPlataforma(urlDestino) {
             // 1. Obtenemos los elementos de la pantalla
