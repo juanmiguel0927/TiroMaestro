@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tiro Maestro | Sistema de Diamantes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; 
+            color: #f8fafc;
+            overflow-x: hidden;
+            touch-action: pan-y; 
+        }
+        
+        .toggle-checkbox:checked { transform: translateX(100%); border-color: #22d3ee; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #0891b2; }
+        .toggle-checkbox { left: 0; top: 0; z-index: 1; border-color: #64748b; transition: transform 0.3s, border-color 0.3s; }
+        .toggle-label { background-color: #475569; transition: all 0.3s; }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn { transition: all 0.2s; }
+        .tab-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-4 sm:py-6 px-0 sm:px-6 w-full">
+
+    <header class="text-center mb-2 w-full max-w-4xl px-4">
+        <h1 class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-2 tracking-tight">
+            Tiro Maestro: Sistema de Diamantes
+        </h1>
+        <p class="text-slate-400 text-sm md:text-base max-w-2xl mx-auto font-medium mb-4">
+            Ve las líneas que tu rival no ve. Sistemas numéricos avanzados y geometría de campeonato.
+        </p>
+    </header>
+
+    <!-- Opciones Generales (Color del Paño) -->
+    <div class="flex items-center justify-center gap-3 mb-2 w-full max-w-4xl">
+        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider w-28 text-right">Color Paño:</span>
+        <button class="w-6 h-6 rounded-full bg-[#047857] shadow border-2 border-transparent hover:border-slate-400 focus:border-white focus:outline-none transition-all" onclick="changeClothColor('#047857')" title="Verde Clásico"></button>
+        <button class="w-6 h-6 rounded-full bg-[#0284c7] shadow border-2 border-transparent hover:border-slate-400 focus:border-white focus:outline-none transition-all" onclick="changeClothColor('#0284c7')" title="Azul Torneo"></button>
+        <button class="w-6 h-6 rounded-full bg-[#be185d] shadow border-2 border-transparent hover:border-slate-400 focus:border-white focus:outline-none transition-all" onclick="changeClothColor('#be185d')" title="Rojo"></button>
+        <button class="w-6 h-6 rounded-full bg-[#ea580c] shadow border-2 border-transparent hover:border-slate-400 focus:border-white focus:outline-none transition-all" onclick="changeClothColor('#ea580c')" title="Naranja"></button>
+        <div class="relative w-6 h-6 rounded-full overflow-hidden shadow border-2 border-transparent hover:border-slate-400 focus-within:border-white transition-all ml-1 cursor-pointer">
+            <input type="color" id="customColorPicker" value="#047857" class="absolute -top-2 -left-2 w-10 h-10 cursor-pointer" onchange="changeClothColor(this.value)" title="Color Personalizado">
+        </div>
+    </div>
+
+    <!-- Opciones Generales (Color del Grip) -->
+    <div class="flex items-center justify-center gap-3 mb-4 w-full max-w-4xl">
+        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider w-28 text-right">Color Grip:</span>
+        <button class="w-6 h-6 rounded-full bg-[#cbd5e1] shadow border-2 border-transparent hover:border-slate-400 focus:border-white focus:outline-none transition-all" onclick="changeGripColor('#cbd5e1')" title="Gris Claro"></button>
+        <button class="w-6 h-6 rounded-full bg-[#ffffff] shadow border-2 border-transparent hover:border-slate-400 focus:border-white focus:outline-none transition-all" onclick="changeGripColor('#ffffff')" title="Blanco"></button>
+        <button class="w-6 h-6 rounded-full bg-[#fef08a] shadow border-2 border-transparent hover:border-slate-400 focus:border-white focus:outline-none transition-all" onclick="changeGripColor('#fef08a')" title="Amarillo"></button>
+        <button class="w-6 h-6 rounded-full bg-[#1e293b] shadow border-2 border-transparent hover:border-slate-400 focus:border-white focus:outline-none transition-all" onclick="changeGripColor('#1e293b')" title="Oscuro"></button>
+        <div class="relative w-6 h-6 rounded-full overflow-hidden shadow border-2 border-transparent hover:border-slate-400 focus-within:border-white transition-all ml-1 cursor-pointer">
+            <input type="color" id="customGripPicker" value="#cbd5e1" class="absolute -top-2 -left-2 w-10 h-10 cursor-pointer" onchange="changeGripColor(this.value)" title="Grip Personalizado">
+        </div>
+    </div>
+
+    <!-- Pestañas de Navegación -->
+    <div class="flex flex-wrap bg-slate-800 p-1.5 rounded-xl shadow-lg mb-4 sm:mb-6 w-11/12 max-w-4xl mx-auto gap-1">
+        <button onclick="switchTab('tab-simetria')" id="btn-simetria" class="tab-btn flex-1 min-w-[100px] py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold rounded-lg text-slate-300 hover:text-white">
+            1. Mitades
+        </button>
+        <button onclick="switchTab('tab-triangulacion')" id="btn-triangulacion" class="tab-btn flex-1 min-w-[100px] py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold rounded-lg text-slate-300 hover:text-white">
+            2. Triangulación
+        </button>
+        <button onclick="switchTab('tab-plus')" id="btn-plus" class="tab-btn flex-1 min-w-[100px] py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold rounded-lg text-slate-300 hover:text-white">
+            3. Sis. Plus
+        </button>
+        <button onclick="switchTab('tab-sid')" id="btn-sid" class="tab-btn flex-1 min-w-[100px] py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold rounded-lg text-slate-300 hover:text-white">
+            4. Sis. SID
+        </button>
+        <button onclick="switchTab('tab-base50')" id="btn-base50" class="tab-btn active flex-1 min-w-[100px] py-2 sm:py-2.5 text-[11px] sm:text-sm font-bold rounded-lg text-slate-300 hover:text-white bg-indigo-900/30">
+            5. Base 50
+        </button>
+    </div>
+
+    <!-- ==========================================
+         PESTAÑA 1: SIMETRÍA 2:1 (SISTEMA DE MITADES)
+         ========================================== -->
+    <div id="tab-simetria" class="tab-content w-full max-w-6xl">
+        <div class="flex flex-col xl:flex-row gap-4 sm:gap-6 items-center xl:items-start justify-center w-full">
+            <div class="w-full xl:w-2/3 flex flex-col items-center flex-shrink-0">
+                <button id="btnAnimarSim" class="w-full max-w-md mb-4 py-3 rounded-2xl font-black text-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-400 hover:to-cyan-400 transition-all transform active:scale-95 shadow-lg border border-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    🎱 Disparar
+                </button>
+                <div class="w-full relative shadow-[0_15px_40px_rgba(0,0,0,0.6)] sm:rounded-2xl overflow-hidden bg-[#78350f]">
+                    <canvas id="canvasSimetria" class="w-full block cursor-crosshair touch-none"></canvas>
+                </div>
+                <div class="mt-4 flex flex-wrap justify-between items-center w-full px-4 gap-4">
+                    <select id="mitadesSelect" class="flex-1 bg-slate-800 border border-slate-600 text-cyan-300 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer font-bold text-center sm:text-left shadow-lg">
+                        <option value="corta" selected>Larga a Corta</option>
+                        <option value="larga">Larga a Larga</option>
+                    </select>
+                    <label for="gridToggleSim" class="flex items-center glass-panel px-4 py-3 rounded-2xl shadow-lg cursor-pointer hover:bg-slate-700/80 transition touch-manipulation flex-1 justify-center">
+                        <span class="mr-3 text-xs sm:text-sm font-bold text-slate-200 uppercase tracking-wider text-center">Grip</span>
+                        <div class="relative inline-block w-12 mr-1 align-middle select-none">
+                            <input type="checkbox" id="gridToggleSim" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></div>
+                        </div>
+                    </label>
+                    <label for="espejoToggle" class="flex items-center glass-panel px-4 py-3 rounded-2xl shadow-lg cursor-pointer hover:bg-slate-700/80 transition touch-manipulation flex-1 justify-center">
+                        <span class="mr-3 text-xs sm:text-sm font-bold text-slate-200 uppercase tracking-wider text-center">Ver Espejo</span>
+                        <div class="relative inline-block w-12 mr-1 align-middle select-none">
+                            <input type="checkbox" id="espejoToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl w-full max-w-md xl:w-1/3 flex-shrink-0 mx-4 sm:mx-0">
+                <div class="flex justify-between items-start border-b border-slate-700 pb-2 mb-4">
+                    <h2 class="text-xl font-black text-white">Sistema de Mitades</h2>
+                    <div class="flex gap-2">
+                        <button onclick="AppSimetria.reset()" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm" title="Restaurar Posiciones">🔄</button>
+                        <button onclick="showHelp('mitades')" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm text-cyan-400 font-bold" title="Ayuda">❓</button>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center mb-4 mt-4">
+                    <span class="text-slate-300 font-semibold text-sm">Salida (Banda Larga):</span>
+                    <span id="simSalida" class="text-yellow-400 font-black text-2xl bg-slate-800 px-4 py-1.5 rounded-xl border border-yellow-900/50">8.0</span>
+                </div>
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-slate-300 font-semibold text-sm">Destino (Proyección):</span>
+                    <span id="simDestino" class="text-white font-black text-sm bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-600/50">Calculando</span>
+                </div>
+                <div class="bg-slate-900 rounded-2xl p-6 border border-cyan-800 mb-6 relative overflow-hidden shadow-inner flex flex-col items-center">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-cyan-500" id="simDecor"></div>
+                    <h3 class="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-1" id="simTitle">Punto de Ataque</h3>
+                    <p class="text-slate-400 text-[11px] text-center mb-3">En la banda opuesta</p>
+                    <div class="flex items-center justify-center text-6xl font-black mb-1">
+                        <span id="simAtaque" class="text-cyan-300 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-colors">4.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         PESTAÑA 2: TRIANGULACIÓN (PROPORCIONES)
+         ========================================== -->
+    <div id="tab-triangulacion" class="tab-content w-full max-w-6xl">
+        <div class="flex flex-col xl:flex-row gap-4 sm:gap-6 items-center xl:items-start justify-center w-full">
+            <div class="w-full xl:w-2/3 flex flex-col items-center flex-shrink-0">
+                <button id="btnAnimarTri" class="w-full max-w-md mb-4 py-3 rounded-2xl font-black text-xl bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-400 hover:to-green-400 transition-all transform active:scale-95 shadow-lg border border-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    🎱 Ejecutar Tiro
+                </button>
+                <div class="w-full relative shadow-[0_15px_40px_rgba(0,0,0,0.6)] sm:rounded-2xl overflow-hidden bg-[#78350f]">
+                    <canvas id="canvasTriangulacion" class="w-full block cursor-crosshair touch-none"></canvas>
+                </div>
+                <div class="mt-4 flex flex-wrap justify-between w-full px-4 gap-4 items-center">
+                    <select id="bandaSelect" class="flex-1 bg-slate-800 border border-slate-600 text-emerald-300 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer font-bold text-center sm:text-left shadow-lg">
+                        <option value="bottom">Banda Inferior (Rebote)</option>
+                        <option value="top">Banda Superior (Rebote)</option>
+                        <option value="left">Banda Izquierda (Rebote)</option>
+                        <option value="right">Banda Derecha (Rebote)</option>
+                    </select>
+                    
+                    <label for="gridToggle" class="flex items-center glass-panel px-4 py-3 rounded-2xl shadow-lg cursor-pointer hover:bg-slate-700/80 transition touch-manipulation justify-center">
+                        <span class="mr-3 text-xs sm:text-sm font-bold text-slate-200 uppercase tracking-wider text-center">Grip (Cuadrícula)</span>
+                        <div class="relative inline-block w-12 mr-1 align-middle select-none">
+                            <input type="checkbox" id="gridToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/>
+                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl w-full max-w-md xl:w-1/3 flex-shrink-0 mx-4 sm:mx-0">
+                <div class="flex justify-between items-start border-b border-slate-700 pb-2 mb-4">
+                    <h2 class="text-xl font-black text-emerald-400">Estrategias de Apunte</h2>
+                    <div class="flex gap-2">
+                        <button onclick="AppTriangulacion.reset()" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm" title="Restaurar Posiciones">🔄</button>
+                        <button onclick="showHelp('triangulacion')" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm text-cyan-400 font-bold" title="Ayuda">❓</button>
+                    </div>
+                </div>
+                
+                <div class="mb-5">
+                    <h3 class="text-emerald-300 text-sm font-bold uppercase mb-1">1. Conexión Visual (La "X")</h3>
+                    <p class="text-[12px] text-slate-300 font-medium leading-relaxed">
+                        Traza una línea visual cruzada. El <b>cruce proyectado perpendicularmente</b> marca tu ataque exacto en la banda.
+                    </p>
+                </div>
+
+                <div class="bg-slate-900 rounded-2xl p-4 border border-emerald-800 mb-6 relative overflow-hidden shadow-inner flex flex-col items-start" id="triBox">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-emerald-500" id="triDecor"></div>
+                    <h3 class="text-emerald-400 text-[11px] font-bold uppercase tracking-widest mb-3 w-full text-center border-b border-slate-800 pb-2" id="triTitle">2. Cálculo Numérico (Diamantes)</h3>
+                    
+                    <div class="flex flex-col gap-2 w-full text-sm">
+                        <div class="flex justify-between items-center bg-slate-800/50 p-1.5 rounded">
+                            <span class="text-slate-400 text-xs">Separación (L):</span> 
+                            <span id="triBase" class="text-white font-bold text-xs">0.00 D</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-slate-800/50 p-1.5 rounded">
+                            <span class="text-slate-400 text-xs">Alt. Blanca (A):</span> 
+                            <span id="triAlt1" class="text-white font-bold text-xs">0.00 D</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-slate-800/50 p-1.5 rounded">
+                            <span class="text-slate-400 text-xs">Alt. Objetivo (B):</span> 
+                            <span id="triAlt2" class="text-white font-bold text-xs">0.00 D</span>
+                        </div>
+                        
+                        <div class="mt-3 pt-3 border-t border-emerald-900/50">
+                            <span class="block text-[10px] text-emerald-400/80 mb-1 font-bold text-center">Desplazamiento = L × [A ÷ (A+B)]</span>
+                            <div class="flex flex-col items-center bg-black/40 p-3 rounded-lg border border-emerald-900/30">
+                                <span class="text-slate-300 font-mono text-xs mb-2" id="triFormula">0.0 × [0.0 ÷ 0.0]</span>
+                                <div class="flex items-center gap-3 w-full justify-between px-2">
+                                    <span class="text-slate-400 text-[10px] text-left leading-tight">Desplázate<br>desde la blanca:</span>
+                                    <span id="triPunto" class="text-emerald-400 font-black text-2xl drop-shadow-[0_0_10px_rgba(52,211,153,0.4)] transition-colors">0.00 D</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         PESTAÑA 3: SISTEMA PLUS (2 BANDAS)
+         ========================================== -->
+    <div id="tab-plus" class="tab-content w-full max-w-6xl">
+        <div class="flex flex-col xl:flex-row gap-4 sm:gap-6 items-center xl:items-start justify-center w-full">
+            <div class="w-full xl:w-2/3 flex flex-col items-center flex-shrink-0">
+                <button id="btnAnimarPlus" class="w-full max-w-md mb-4 py-3 rounded-2xl font-black text-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white hover:from-purple-400 hover:to-fuchsia-400 transition-all transform active:scale-95 shadow-lg border border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    🎱 Ejecutar Tiro
+                </button>
+                <div class="w-full relative shadow-[0_15px_40px_rgba(0,0,0,0.6)] sm:rounded-2xl overflow-hidden bg-[#78350f]">
+                    <canvas id="canvasPlus" class="w-full block cursor-crosshair touch-none"></canvas>
+                </div>
+                <div class="mt-4 flex flex-wrap justify-between w-full px-4 gap-4 items-center">
+                    <select id="plusSelect" class="flex-1 bg-slate-800 border border-slate-600 text-purple-300 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors cursor-pointer font-bold text-center sm:text-left shadow-lg">
+                        <option value="left" selected>Ataque a Banda Corta Izquierda</option>
+                        <option value="right">Ataque a Banda Corta Derecha</option>
+                    </select>
+                    <label for="gridTogglePlus" class="flex items-center glass-panel px-4 py-3 rounded-2xl shadow-lg cursor-pointer hover:bg-slate-700/80 transition touch-manipulation justify-center">
+                        <span class="mr-3 text-xs sm:text-sm font-bold text-slate-200 uppercase tracking-wider text-center">Grip</span>
+                        <div class="relative inline-block w-12 mr-1 align-middle select-none">
+                            <input type="checkbox" id="gridTogglePlus" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl w-full max-w-md xl:w-1/3 flex-shrink-0 mx-4 sm:mx-0">
+                <div class="flex justify-between items-start border-b border-slate-700 pb-2 mb-4">
+                    <h2 class="text-xl font-black text-purple-400">Sistema Plus</h2>
+                    <div class="flex gap-2">
+                        <button onclick="AppPlus.reset()" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm" title="Restaurar Posiciones">🔄</button>
+                        <button onclick="showHelp('plus')" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm text-cyan-400 font-bold" title="Ayuda">❓</button>
+                    </div>
+                </div>
+                <p class="text-[12px] text-slate-300 font-medium leading-relaxed mb-4">
+                    Tiro a 2 bandas en libre 2D. Fórmula: <b>Llegada - Salida = Ataque</b>.
+                </p>
+
+                <div class="bg-slate-900 rounded-2xl p-5 border border-purple-800 mb-6 relative overflow-hidden shadow-inner flex flex-col items-center">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-purple-500" id="plusDecor"></div>
+                    <h3 class="text-purple-400 text-[11px] font-bold uppercase tracking-widest w-full text-center border-b border-slate-800 pb-2 mb-3" id="plusTitle">Cálculo de 2 Bandas</h3>
+                    
+                    <div class="flex w-full items-center justify-between px-2 mb-4">
+                        <div class="text-center">
+                            <span class="block text-slate-400 text-[10px] uppercase">Llegada</span>
+                            <span id="plusLlegada" class="text-white font-black text-2xl">00</span>
+                        </div>
+                        <span class="text-slate-500 font-black text-xl">-</span>
+                        <div class="text-center">
+                            <span class="block text-slate-400 text-[10px] uppercase">Salida</span>
+                            <span id="plusSalida" class="text-yellow-400 font-black text-2xl">00</span>
+                        </div>
+                        <span class="text-slate-500 font-black text-xl">=</span>
+                        <div class="text-center">
+                            <span class="block text-slate-400 text-[10px] uppercase">Ataque</span>
+                            <span id="plusAtaque" class="text-purple-400 font-black text-3xl drop-shadow-[0_0_10px_rgba(168,85,247,0.5)] transition-colors">00</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-[11px] text-center">Apunta al valor <span class="text-purple-300 font-bold transition-colors" id="plusAtaqueText">00</span> en la banda corta.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         PESTAÑA 4: SISTEMA SID (MULTIPLICACIÓN)
+         ========================================== -->
+    <div id="tab-sid" class="tab-content w-full max-w-6xl">
+        <div class="flex flex-col xl:flex-row gap-4 sm:gap-6 items-center xl:items-start justify-center w-full">
+            <div class="w-full xl:w-2/3 flex flex-col items-center flex-shrink-0">
+                <button id="btnAnimarSid" class="w-full max-w-md mb-4 py-3 rounded-2xl font-black text-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-400 hover:to-amber-400 transition-all transform active:scale-95 shadow-lg border border-orange-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    🎱 Ejecutar Bricole
+                </button>
+                <div class="w-full relative shadow-[0_15px_40px_rgba(0,0,0,0.6)] sm:rounded-2xl overflow-hidden bg-[#78350f]">
+                    <canvas id="canvasSid" class="w-full block cursor-crosshair touch-none"></canvas>
+                </div>
+                <div class="mt-4 flex flex-wrap justify-between w-full px-4 gap-4 items-center">
+                    <select id="sidSelect" class="flex-1 bg-slate-800 border border-slate-600 text-orange-300 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500 transition-colors cursor-pointer font-bold text-center sm:text-left shadow-lg">
+                        <option value="larga" selected>Llegada a Larga (Salida Corta -> Ataque Corta Der)</option>
+                        <option value="corta">Llegada a Corta (Salida Larga -> Ataque Larga Sup)</option>
+                    </select>
+                    <label for="gridToggleSid" class="flex items-center glass-panel px-4 py-3 rounded-2xl shadow-lg cursor-pointer hover:bg-slate-700/80 transition touch-manipulation justify-center">
+                        <span class="mr-3 text-xs sm:text-sm font-bold text-slate-200 uppercase tracking-wider text-center">Grip</span>
+                        <div class="relative inline-block w-12 mr-1 align-middle select-none">
+                            <input type="checkbox" id="gridToggleSid" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl w-full max-w-md xl:w-1/3 flex-shrink-0 mx-4 sm:mx-0">
+                <div class="flex justify-between items-start border-b border-slate-700 pb-2 mb-4">
+                    <h2 class="text-xl font-black text-orange-400">Sistema SID</h2>
+                    <div class="flex gap-2">
+                        <button onclick="AppSid.reset()" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm" title="Restaurar Posiciones">🔄</button>
+                        <button onclick="showHelp('sid')" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm text-cyan-400 font-bold" title="Ayuda">❓</button>
+                    </div>
+                </div>
+                <p class="text-[12px] text-slate-300 font-medium leading-relaxed mb-4">
+                    Motor 2D libre. La fórmula es una multiplicación: <b>Salida × Llegada = Ataque</b>.
+                </p>
+
+                <div class="bg-slate-900 rounded-2xl p-5 border border-orange-800 mb-6 relative overflow-hidden shadow-inner flex flex-col items-center">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-orange-500" id="sidDecor"></div>
+                    <h3 class="text-orange-400 text-[11px] font-bold uppercase tracking-widest w-full text-center border-b border-slate-800 pb-2 mb-3" id="sidTitle">Ecuación SID</h3>
+                    
+                    <div class="flex w-full items-center justify-between px-2 mb-4">
+                        <div class="text-center">
+                            <span class="block text-slate-400 text-[10px] uppercase">Salida</span>
+                            <span id="sidSalida" class="text-yellow-400 font-black text-2xl">0.0</span>
+                        </div>
+                        <span class="text-slate-500 font-black text-xl">×</span>
+                        <div class="text-center">
+                            <span class="block text-slate-400 text-[10px] uppercase">Llegada</span>
+                            <span id="sidLlegada" class="text-red-400 font-black text-2xl">0.0</span>
+                        </div>
+                        <span class="text-slate-500 font-black text-xl">=</span>
+                        <div class="text-center">
+                            <span class="block text-slate-400 text-[10px] uppercase">Ataque</span>
+                            <span id="sidAtaque" class="text-orange-400 font-black text-3xl drop-shadow-[0_0_10px_rgba(249,115,22,0.5)] transition-colors">00</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-[11px] text-center">Apunta al valor <span class="text-orange-300 font-bold transition-colors" id="sidAtaqueText">00</span> proyectado en la banda opuesta.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         PESTAÑA 5: BASE 50 (SISTEMA DIAMANTE LKL)
+         ========================================== -->
+    <div id="tab-base50" class="tab-content active w-full max-w-6xl">
+        <div class="flex flex-col xl:flex-row gap-4 sm:gap-6 items-center xl:items-start justify-center w-full">
+            <div class="w-full xl:w-2/3 flex flex-col items-center flex-shrink-0">
+                <button id="btnAnimarBase50" class="w-full max-w-md mb-4 py-3 rounded-2xl font-black text-xl bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:from-indigo-400 hover:to-blue-400 transition-all transform active:scale-95 shadow-lg border border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    🎱 Tiro a 3/4 Bandas
+                </button>
+                <div class="w-full relative shadow-[0_15px_40px_rgba(0,0,0,0.6)] sm:rounded-2xl overflow-hidden bg-[#78350f]">
+                    <canvas id="canvasBase50" class="w-full block cursor-crosshair touch-none"></canvas>
+                </div>
+                <div class="mt-4 flex flex-wrap justify-between w-full px-4 gap-4 items-center">
+                    <label for="cuartaBandaToggle" class="flex items-center glass-panel px-4 py-3 rounded-2xl shadow-lg cursor-pointer hover:bg-slate-700/80 transition touch-manipulation justify-center">
+                        <span class="mr-3 text-xs sm:text-sm font-bold text-slate-200 uppercase tracking-wider text-center">Líneas 4ta Banda</span>
+                        <div class="relative inline-block w-12 mr-1 align-middle select-none">
+                            <input type="checkbox" id="cuartaBandaToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></div>
+                        </div>
+                    </label>
+                    <label for="gridToggleBase" class="flex items-center glass-panel px-4 py-3 rounded-2xl shadow-lg cursor-pointer hover:bg-slate-700/80 transition touch-manipulation justify-center">
+                        <span class="mr-3 text-xs sm:text-sm font-bold text-slate-200 uppercase tracking-wider text-center">Grip</span>
+                        <div class="relative inline-block w-12 mr-1 align-middle select-none">
+                            <input type="checkbox" id="gridToggleBase" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl w-full max-w-md xl:w-1/3 flex-shrink-0 mx-4 sm:mx-0">
+                <div class="flex justify-between items-start border-b border-slate-700 pb-2 mb-4">
+                    <h2 class="text-xl font-black text-indigo-400">Sistema Base 50</h2>
+                    <div class="flex gap-2">
+                        <button onclick="AppBase50.reset()" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm" title="Restaurar Posiciones">🔄</button>
+                        <button onclick="showHelp('base50')" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded shadow transition-colors text-sm text-cyan-400 font-bold" title="Ayuda">❓</button>
+                    </div>
+                </div>
+                <p class="text-[12px] text-slate-300 font-medium leading-relaxed mb-4">
+                    El rey de los sistemas (LKL). Fórmula: <b>Salida (CB) - Llegada (3R) = Ataque (1R)</b>.
+                </p>
+
+                <div class="bg-slate-900 rounded-2xl p-5 border border-indigo-800 mb-6 relative overflow-hidden shadow-inner flex flex-col items-center">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-indigo-500" id="base50Decor"></div>
+                    <h3 class="text-indigo-400 text-[11px] font-bold uppercase tracking-widest w-full text-center border-b border-slate-800 pb-2 mb-3" id="base50Title">Cálculo de Sistema</h3>
+                    
+                    <div class="flex w-full items-center justify-between px-2 mb-4">
+                        <div class="text-center">
+                            <span class="block text-slate-400 text-[10px] uppercase">Salida</span>
+                            <span id="base50Salida" class="text-yellow-400 font-black text-2xl">00.0</span>
+                        </div>
+                        <span class="text-slate-500 font-black text-xl">-</span>
+                        <div class="text-center">
+                            <span class="block text-slate-400 text-[10px] uppercase">Llegada 3R</span>
+                            <span id="base50Llegada" class="text-green-400 font-black text-2xl">00.0</span>
+                        </div>
+                        <span class="text-slate-500 font-black text-xl">=</span>
+                        <div class="text-center">
+                            <span class="block text-slate-400 text-[10px] uppercase">Ataque 1R</span>
+                            <span id="base50Ataque" class="text-indigo-400 font-black text-3xl drop-shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-colors">00.0</span>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-[11px] text-center">Apunta al valor <span class="text-indigo-300 font-bold transition-colors" id="base50AtaqueText">00.0</span> en la banda superior.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Ayuda (UX) -->
+    <div id="helpModal" class="fixed inset-0 z-50 hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-600 max-w-lg w-full p-6 relative">
+            <button onclick="closeHelp()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 text-slate-400 hover:text-white hover:bg-red-500 transition-colors">✕</button>
+            <h3 id="helpTitle" class="text-2xl font-black text-cyan-400 mb-4 border-b border-slate-700 pb-2">Ayuda del Sistema</h3>
+            <div id="helpContent" class="text-slate-300 space-y-3 text-sm leading-relaxed">
+            </div>
+        </div>
+    </div>
+
+    <!-- Créditos -->
+    <footer class="mt-auto py-8 text-center w-full">
+        <p class="text-slate-400 text-sm font-medium tracking-wide">
+            Creado por <span class="text-cyan-400 font-bold">Juan Miguel Rios Redondo</span>
+        </p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // VARIABLES GLOBALES Y MANEJO DE ESTADO
+        // ==========================================
+        let globalClothColor = '#047857';
+        let globalGripColor = '#cbd5e1';
+
+        function getRecommendedGripColor(hexCloth) {
+            // Predeterminados para colores exactos
+            if (hexCloth.toLowerCase() === '#047857') return '#cbd5e1'; // Verde -> Gris Claro
+            if (hexCloth.toLowerCase() === '#0284c7') return '#ffffff'; // Azul -> Blanco
+            if (hexCloth.toLowerCase() === '#be185d') return '#fef08a'; // Rojo -> Amarillo
+            if (hexCloth.toLowerCase() === '#ea580c') return '#1e293b'; // Naranja -> Oscuro
+            
+            // Cálculo de luminosidad para colores personalizados
+            let hex = hexCloth.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(char => char + char).join('');
+            let r = parseInt(hex.substring(0, 2), 16);
+            let g = parseInt(hex.substring(2, 4), 16);
+            let b = parseInt(hex.substring(4, 6), 16);
+            let luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+            
+            // Si el paño es claro, grip oscuro. Si es oscuro, grip blanco.
+            return luminance > 130 ? '#1e293b' : '#ffffff';
+        }
+
+        function changeClothColor(color) {
+            globalClothColor = color;
+            document.getElementById('customColorPicker').value = color;
+            
+            // Recomendar y aplicar el color del grip automáticamente
+            let recommendedGrip = getRecommendedGripColor(color);
+            changeGripColor(recommendedGrip, false);
+        }
+
+        function changeGripColor(color, isManual = true) {
+            globalGripColor = color;
+            document.getElementById('customGripPicker').value = color;
+        }
+
+        // Sistema de Ayuda
+        const helpData = {
+            'mitades': { title: 'Sistema de Mitades (Simetría)', content: '<p>Este sistema se utiliza para calcular tiros buscando el punto medio geométrico entre la bola blanca y la bola objetivo.</p><p>Arrastra la bola blanca o el objetivo para ver cómo la línea de ataque siempre incide exactamente en el punto medio de la separación geométrica (ya sea hacia la banda larga o corta).</p>' },
+            'triangulacion': { title: 'Proporciones por Triangulación', content: '<p>Un método visual y matemático (usando diamantes) para encontrar el punto exacto de rebote sin usar efectos.</p><p>La fórmula <b>L × [A ÷ (A+B)]</b> calcula la desviación precisa desde la base perpendicular de la bola blanca, permitiéndote trazar una "X" perfecta mentalmente.</p>' },
+            'plus': { title: 'Sistema Plus (2 Bandas)', content: '<p>Diseñado para tiros en donde necesitas rebotar en dos bandas consecutivas antes de llegar al objetivo.</p><p>La fórmula es estricta: <b>Llegada - Salida = Ataque</b>. Con este sistema puedes saber a qué diamante de la primera banda debes apuntar para alcanzar cualquier punto de la mesa.</p>' },
+            'sid': { title: 'Sistema SID (Bricole Múltiple)', content: '<p>Este es un sistema multiplicativo especializado en tiros de bricole (donde tocas banda antes que a cualquier bola).</p><p>La fórmula <b>Salida × Llegada = Ataque</b> te indica el punto proyectado exacto. En esta app, la simulación calcula el punto real de ataque (1ra banda) para lograr la llegada deseada (3ra banda).</p>' },
+            'base50': { title: 'Sistema Base 50 (LKL Diamantes)', content: '<p>El sistema más famoso del billar a tres bandas. Se le llama "Base 50" porque la esquina inferior derecha vale 50 puntos de salida.</p><p>La fórmula clásica es: <b>Salida (Bola Blanca) - Llegada (3ra Banda) = Ataque (1ra Banda)</b>. Activa las líneas de la 4ta banda para predecir recorridos más largos.</p>' }
+        };
+
+        function showHelp(systemId) {
+            const data = helpData[systemId];
+            document.getElementById('helpTitle').textContent = data.title;
+            document.getElementById('helpContent').innerHTML = data.content;
+            document.getElementById('helpModal').classList.remove('hidden');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
+        }
+
+        // ==========================================
+        // UTILIDADES DRY (NO REPETIR CÓDIGO)
+        // ==========================================
+        const MathUtils = {
+            lerp: (s, e, a) => s + (e - s) * MathUtils.easeOut(a),
+            easeOut: t => 1 - Math.pow(1 - t, 3), // Fricción realista
+            distToSegment: (p, v, w) => {
+                let l2 = (w.x - v.x)**2 + (w.y - v.y)**2;
+                if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
+                let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+                t = Math.max(0, Math.min(1, t));
+                return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
+            },
+            applySnapping: (val, snapBase) => Math.round(val / snapBase) * snapBase
+        };
+
+        const CanvasUtils = {
+            setupRetina: (canvas, ctx, logicalWidth, logicalHeight) => {
+                const dpr = window.devicePixelRatio || 1;
+                // No fijamos style.width/height en px para que Tailwind (w-full) haga su trabajo responsivo
+                canvas.width = logicalWidth * dpr;
+                canvas.height = logicalHeight * dpr;
+                ctx.scale(dpr, dpr);
+                canvas._logW = logicalWidth;
+                canvas._logH = logicalHeight;
+            },
+            getTouchPos: (canvas, e) => {
+                const rect = canvas.getBoundingClientRect();
+                let cX = e.clientX, cY = e.clientY;
+                if(e.touches && e.touches.length > 0) { cX = e.touches[0].clientX; cY = e.touches[0].clientY; }
+                return {
+                    x: (cX - rect.left) * (canvas._logW / rect.width),
+                    y: (cY - rect.top) * (canvas._logH / rect.height)
+                };
+            },
+            drawBaseTable: (ctx, playX, playY, playW, playH, opacity = 1) => {
+                ctx.save();
+                ctx.globalAlpha = opacity;
+                ctx.fillStyle = '#451a03'; ctx.fillRect(playX - 45, playY - 45, playW + 90, playH + 90);
+                ctx.fillStyle = globalClothColor; ctx.fillRect(playX, playY, playW, playH);
+                ctx.strokeStyle = '#000'; ctx.lineWidth = 6; ctx.strokeRect(playX, playY, playW, playH);
+                ctx.fillStyle = '#0a0a0a'; const pR = 25;
+                [{x: playX, y: playY}, {x: playX + playW/2, y: playY}, {x: playX + playW, y: playY}, {x: playX, y: playY + playH}, {x: playX + playW/2, y: playY + playH}, {x: playX + playW, y: playY + playH}].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, pR, 0, Math.PI * 2); ctx.fill(); });
+                ctx.restore();
+            },
+            drawStandardDiamonds: (ctx, playX, playY, playW, playH, showGrid = false) => {
+                let diaX = playW / 8; let diaY = playH / 4;
+                if (showGrid) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.2;
+                    ctx.strokeStyle = globalGripColor;
+                    ctx.lineWidth = 1;
+                    for(let i=1; i<=7; i++) { ctx.beginPath(); ctx.moveTo(playX + i*diaX, playY); ctx.lineTo(playX + i*diaX, playY + playH); ctx.stroke(); }
+                    for(let i=1; i<=3; i++) { ctx.beginPath(); ctx.moveTo(playX, playY + i*diaY); ctx.lineTo(playX + playW, playY + i*diaY); ctx.stroke(); }
+                    ctx.restore();
+                }
+                ctx.fillStyle = globalGripColor;
+                for(let i=1; i<=7; i++) {
+                    let px = playX + i * diaX;
+                    ctx.beginPath(); ctx.arc(px, playY - 15, 4, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(px, playY + playH + 15, 4, 0, Math.PI*2); ctx.fill();
+                }
+                for(let i=1; i<=3; i++) {
+                    let py = playY + i * diaY;
+                    ctx.beginPath(); ctx.arc(playX - 15, py, 4, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(playX + playW + 15, py, 4, 0, Math.PI*2); ctx.fill();
+                }
+            },
+            drawPostImpact: (ctx, x1, y1, x2, y2) => {
+                let dx = x2 - x1; let dy = y2 - y1;
+                let dist = Math.hypot(dx, dy);
+                if(dist === 0) return;
+                dx /= dist; dy /= dist;
+                let tx1 = -dy; let ty1 = dx;
+                let tx2 = dy; let ty2 = -dx;
+                ctx.beginPath();
+                ctx.moveTo(x2, y2); ctx.lineTo(x2 + tx1 * 40, y2 + ty1 * 40);
+                ctx.moveTo(x2, y2); ctx.lineTo(x2 + tx2 * 40, y2 + ty2 * 40);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+            }
+        };
+
+        // Controlador de Pestañas
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.getElementById('btn-' + tabId.replace('tab-', '')).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            AppSimetria.pause(); AppTriangulacion.pause(); AppPlus.pause(); AppSid.pause(); AppBase50.pause();
+            if(tabId === 'tab-simetria') AppSimetria.resume();
+            if(tabId === 'tab-triangulacion') AppTriangulacion.resume();
+            if(tabId === 'tab-plus') AppPlus.resume();
+            if(tabId === 'tab-sid') AppSid.resume();
+            if(tabId === 'tab-base50') AppBase50.resume();
+        }
+
+        // ==========================================
+        // APP 1: SIMETRÍA (SISTEMA DE MITADES)
+        // ==========================================
+        const AppSimetria = (() => {
+            const canvas = document.getElementById('canvasSimetria'); const ctx = canvas.getContext('2d');
+            const uiSalida = document.getElementById('simSalida'); const uiDestino = document.getElementById('simDestino'); 
+            const uiAtaque = document.getElementById('simAtaque'); const btnAnimar = document.getElementById('btnAnimarSim');
+            const espejoToggle = document.getElementById('espejoToggle'); const mitadesSelect = document.getElementById('mitadesSelect');
+            const uiDecor = document.getElementById('simDecor'); const uiTitle = document.getElementById('simTitle');
+            const gridToggle = document.getElementById('gridToggleSim');
+
+            const padding = 60; const playW = 800; const playH = 400; const playX = padding; 
+            const segmentX = playW / 8; const segmentY = playH / 8; 
+            const cwSingle = playW + padding * 2; const cwDouble = playW * 2 + padding * 2; 
+            const ch = playH + padding * 2; const chDouble = playH * 2 + padding * 2;
+
+            let playY = padding; let showGrid = false;
+            let isAnimating = false; let showMirror = false; let animProgress = 0;
+            let trail = []; let isActive = false; let loopId; let isPossible = true;
+
+            let ball = { x: 0, y: 0, radius: 15 }; 
+            let targetObj = { x: 0, y: 0, radius: 18 }; 
+
+            let ptStart = {x: 0, y: 0};
+            let ptAttack = {x: 0, y: 0};
+            let ptTarget = {x: 0, y: 0};
+            let draggedItem = null; 
+
+            function resetPositions() {
+                let modo = mitadesSelect.value;
+                if (modo === 'larga') {
+                    ball.x = playX + segmentX * 6; ball.y = playY + playH - 20; 
+                    targetObj.x = playX + segmentX * 2; targetObj.y = playY + playH - 20;
+                } else {
+                    ball.x = playX + segmentX * 4; ball.y = playY + playH - 20; 
+                    targetObj.x = playX + segmentX * 2; targetObj.y = playY + segmentY * 2;
+                }
+                ptStart = {x: ball.x, y: ball.y};
+                ptTarget = {x: targetObj.x, y: targetObj.y};
+                setCanvasSize();
+            }
+
+            function setCanvasSize() { 
+                let modo = mitadesSelect.value;
+                let logW = cwSingle, logH = ch;
+                let newPlayY = padding;
+                
+                if (showMirror && modo === 'larga') {
+                    logH = chDouble; newPlayY = padding + playH;
+                } else if (showMirror && modo === 'corta') {
+                    logW = cwDouble;
+                }
+                
+                CanvasUtils.setupRetina(canvas, ctx, logW, logH);
+
+                let deltaY = newPlayY - playY;
+                playY = newPlayY;
+                ball.y += deltaY;
+                targetObj.y += deltaY;
+                ptStart.y += deltaY;
+                ptTarget.y += deltaY;
+                
+                ball.x = Math.max(playX, Math.min(playX + playW, ball.x));
+                ball.y = Math.max(playY, Math.min(playY + playH, ball.y));
+                targetObj.x = Math.max(playX, Math.min(playX + playW, targetObj.x));
+                targetObj.y = Math.max(playY, Math.min(playY + playH, targetObj.y));
+
+                ptStart.x = ball.x;
+                ptStart.y = ball.y;
+                ptTarget.x = targetObj.x;
+                ptTarget.y = targetObj.y;
+                
+                updateMath(); 
+            }
+
+            function handleDown(e) {
+                if(isAnimating || !isActive) return; const pos = CanvasUtils.getTouchPos(canvas, e);
+                const dist = (p1, p2) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                if (dist(pos, ptStart) <= ball.radius * 4) { draggedItem = 'ball'; e.preventDefault(); }
+                else if (dist(pos, targetObj) <= targetObj.radius * 4) { draggedItem = 'target'; e.preventDefault(); }
+            }
+            function handleMove(e) {
+                if (!draggedItem || isAnimating || !isActive) return; e.preventDefault(); const pos = CanvasUtils.getTouchPos(canvas, e);
+                let boundX = Math.max(playX + 15, Math.min(playX + playW - 15, pos.x));
+                let boundY = Math.max(playY + 15, Math.min(playY + playH - 15, pos.y));
+                
+                let modo = mitadesSelect.value;
+                if (modo === 'larga' && draggedItem === 'target') { boundY = playY + playH - 20; }
+
+                if (showGrid) {
+                    boundX = MathUtils.applySnapping(boundX - playX, segmentX / 2) + playX;
+                    boundY = MathUtils.applySnapping(boundY - playY, segmentY / 2) + playY;
+                    boundX = Math.max(playX, Math.min(playX + playW, boundX));
+                    boundY = Math.max(playY, Math.min(playY + playH, boundY));
+                }
+
+                if (draggedItem === 'ball') { ptStart.x = boundX; ptStart.y = boundY; ball.x = ptStart.x; ball.y = ptStart.y; }
+                else if (draggedItem === 'target') { targetObj.x = boundX; targetObj.y = boundY; ptTarget.x = targetObj.x; ptTarget.y = targetObj.y; }
+                updateMath();
+            }
+
+            function updateMath() {
+                let modo = mitadesSelect.value;
+                let logicalSalida = (playX + playW - ptStart.x) / segmentX; uiSalida.textContent = logicalSalida.toFixed(0);
+                
+                if (modo === 'corta') {
+                    uiDestino.textContent = "Hacia (" + ((playX + playW - targetObj.x)/segmentX).toFixed(0) + ", " + ((playY + playH - targetObj.y)/segmentY).toFixed(0) + ")";
+                    const rightWall = playX + playW; const mirrorTargetX = rightWall + (rightWall - targetObj.x);
+                    let intersectY = playY + playH/2;
+                    if (mirrorTargetX !== ptStart.x) { intersectY = ptStart.y + (rightWall - ptStart.x) * ((targetObj.y - ptStart.y) / (mirrorTargetX - ptStart.x)); }
+                    
+                    ptAttack.x = rightWall; ptAttack.y = intersectY;
+                    let logicalAtaque = (playY + playH - ptAttack.y) / segmentY; 
+                    uiAtaque.textContent = logicalAtaque.toFixed(0);
+                    isPossible = (intersectY >= playY && intersectY <= playY + playH && rightWall > ptStart.x && mirrorTargetX > ptStart.x);
+                } else {
+                    uiDestino.textContent = "Banda Larga (" + ((playX + playW - targetObj.x)/segmentX).toFixed(0) + ")";
+                    const topWall = playY; const mirrorTargetY = topWall - (targetObj.y - topWall);
+                    let intersectX = playX + playW/2;
+                    if (mirrorTargetY !== ptStart.y) { intersectX = ptStart.x + (topWall - ptStart.y) * ((targetObj.x - ptStart.x) / (mirrorTargetY - ptStart.y)); }
+                    
+                    ptAttack.y = topWall; ptAttack.x = intersectX;
+                    let logicalAtaque = (playX + playW - ptAttack.x) / segmentX; 
+                    uiAtaque.textContent = logicalAtaque.toFixed(0);
+                    isPossible = (intersectX >= playX && intersectX <= playX + playW && ptStart.y > topWall && mirrorTargetY < topWall);
+                }
+
+                btnAnimar.disabled = !isPossible;
+                uiAtaque.style.color = isPossible ? '' : '#ef4444'; uiTitle.style.color = isPossible ? '' : '#ef4444';
+                uiTitle.textContent = isPossible ? 'Punto de Ataque' : 'TIRO IMPOSIBLE'; uiDecor.style.backgroundColor = isPossible ? '' : '#ef4444';
+                if (!isAnimating) { ball.x = ptStart.x; ball.y = ptStart.y; trail = []; }
+            }
+
+            function drawTable(x, y, opacity, isLargaMode = false) {
+                CanvasUtils.drawBaseTable(ctx, x, y, playW, playH, opacity);
+                CanvasUtils.drawStandardDiamonds(ctx, x, y, playW, playH, showGrid);
+                ctx.font = 'bold 16px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fde047';
+                for(let i=0; i<=8; i++) {
+                    let valX = 8 - i; 
+                    ctx.fillText(valX, x + i * segmentX, y + playH + 35);
+                    if (!isLargaMode) ctx.fillText(valX, x + i * segmentX, y - 35);
+                    
+                    let valY = 8 - i; let py = y + i * segmentY;
+                    if (!isLargaMode && i%2===0) { ctx.fillText(valY, x - 35, py); ctx.fillText(valY, x + playW + 35, py); }
+                }
+            }
+
+            function draw() {
+                if(!isActive) return;
+                ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                let modo = mitadesSelect.value;
+                
+                if (showMirror) {
+                    if (modo === 'corta') {
+                        drawTable(playX + playW, playY, 0.4, false);
+                        ctx.beginPath(); ctx.moveTo(playX + playW, playY); ctx.lineTo(playX + playW, playY + playH);
+                        ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.setLineDash([15,15]); ctx.stroke(); ctx.setLineDash([]);
+                        let mirrorX = playX + playW + (playX + playW - targetObj.x);
+                        ctx.beginPath(); ctx.arc(mirrorX, targetObj.y, targetObj.radius, 0, Math.PI*2); ctx.fillStyle = 'rgba(239, 68, 68, 0.5)'; ctx.fill();
+                    } else {
+                        drawTable(playX, playY - playH, 0.4, true);
+                        ctx.beginPath(); ctx.moveTo(playX, playY); ctx.lineTo(playX + playW, playY);
+                        ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.setLineDash([15,15]); ctx.stroke(); ctx.setLineDash([]);
+                        let mirrorY = playY - (targetObj.y - playY);
+                        ctx.beginPath(); ctx.arc(targetObj.x, mirrorY, targetObj.radius, 0, Math.PI*2); ctx.fillStyle = 'rgba(239, 68, 68, 0.5)'; ctx.fill();
+                    }
+                }
+
+                drawTable(playX, playY, 1, modo === 'larga');
+
+                const pulse = 3 * Math.sin(Date.now() / 200);
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, targetObj.radius + pulse, 0, Math.PI*2); ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; ctx.fill();
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, 8, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+                if (!isAnimating && animProgress === 0) {
+                    if (showMirror) {
+                        ctx.beginPath(); ctx.moveTo(ptStart.x, ptStart.y); ctx.lineTo(ptAttack.x, ptAttack.y); ctx.lineTo(ptTarget.x, ptTarget.y);
+                        ctx.strokeStyle = isPossible ? 'rgba(34, 211, 238, 0.15)' : 'rgba(239, 68, 68, 0.15)'; ctx.lineWidth = 24; ctx.stroke();
+                        ctx.strokeStyle = isPossible ? 'rgba(34, 211, 238, 0.3)' : 'rgba(239, 68, 68, 0.3)'; ctx.lineWidth = 4; ctx.stroke();
+                        
+                        ctx.beginPath(); ctx.moveTo(ptStart.x, ptStart.y);
+                        if (modo === 'corta') {
+                            let mirrorX = playX + playW + (playX + playW - targetObj.x);
+                            ctx.lineTo(mirrorX, targetObj.y);
+                        } else {
+                            let mirrorY = playY - (targetObj.y - playY);
+                            ctx.lineTo(targetObj.x, mirrorY);
+                        }
+                        ctx.strokeStyle = isPossible ? 'rgba(255, 255, 255, 0.9)' : '#ef4444'; ctx.setLineDash([10, 10]); ctx.lineWidth = 4; ctx.stroke(); ctx.setLineDash([]);
+                    } else {
+                        ctx.beginPath(); ctx.moveTo(ptStart.x, ptStart.y); ctx.lineTo(ptAttack.x, ptAttack.y); ctx.lineTo(ptTarget.x, ptTarget.y);
+                        ctx.strokeStyle = isPossible ? 'rgba(34, 211, 238, 0.15)' : 'rgba(239, 68, 68, 0.15)'; ctx.lineWidth = 24; ctx.stroke();
+                        ctx.strokeStyle = isPossible ? 'rgba(34, 211, 238, 0.8)' : '#ef4444'; ctx.setLineDash([10, 10]); ctx.lineWidth = 4; ctx.stroke(); ctx.setLineDash([]);
+                    }
+                    ctx.beginPath(); ctx.arc(ptAttack.x, ptAttack.y, 7, 0, Math.PI*2); ctx.fillStyle = isPossible ? '#22d3ee' : '#ef4444'; ctx.fill();
+                    if(isPossible) CanvasUtils.drawPostImpact(ctx, ptAttack.x, ptAttack.y, ptTarget.x, ptTarget.y);
+                }
+
+                trail.forEach((t, i) => { ctx.beginPath(); ctx.arc(t.x, t.y, ball.radius * 0.7, 0, Math.PI*2); ctx.fillStyle = `rgba(255, 255, 255, ${(i / trail.length) * 0.4})`; ctx.fill(); });
+                ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); ctx.fillStyle = '#e2e8f0'; ctx.fill(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth=1; ctx.stroke();
+                ctx.restore(); 
+            }
+
+            function animate() {
+                if (!isAnimating || !isActive || !isPossible) return;
+                animProgress += 0.03; trail.push({x: ball.x, y: ball.y}); if (trail.length > 25) trail.shift(); 
+                if (animProgress <= 1) { ball.x = MathUtils.lerp(ptStart.x, ptAttack.x, animProgress); ball.y = MathUtils.lerp(ptStart.y, ptAttack.y, animProgress); } 
+                else if (animProgress <= 2) { let ap2 = animProgress - 1; ball.x = MathUtils.lerp(ptAttack.x, ptTarget.x, ap2); ball.y = MathUtils.lerp(ptAttack.y, ptTarget.y, ap2); } 
+                else {
+                    isAnimating = false; ball.x = ptTarget.x; ball.y = ptTarget.y;
+                    setTimeout(() => { ball.x = ptStart.x; ball.y = ptStart.y; trail = []; animProgress = 0; isAnimating = false; btnAnimar.classList.remove('hidden'); updateMath(); }, 1200);
+                    let fade = setInterval(() => { trail.shift(); if(trail.length===0) clearInterval(fade); }, 40);
+                }
+            }
+
+            canvas.addEventListener('mousedown', handleDown); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', () => draggedItem = null);
+            canvas.addEventListener('touchstart', handleDown, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchend', () => draggedItem = null);
+            btnAnimar.addEventListener('click', () => { if(isAnimating || !isPossible) return; isAnimating = true; animProgress = 0; trail = []; btnAnimar.classList.add('hidden'); });
+            espejoToggle.addEventListener('change', e => { showMirror = e.target.checked; setCanvasSize(); });
+            mitadesSelect.addEventListener('change', () => { resetPositions(); setCanvasSize(); });
+            gridToggle.addEventListener('change', e => { showGrid = e.target.checked; updateMath(); });
+            function loop() { if(isActive) { if(isAnimating) animate(); draw(); } loopId = requestAnimationFrame(loop); }
+            return { init: () => { resetPositions(); setCanvasSize(); loop(); }, pause: () => { isActive = false; cancelAnimationFrame(loopId); }, resume: () => { isActive = true; setCanvasSize(); updateMath(); loop(); }, reset: resetPositions };
+        })();
+
+
+        // ==========================================
+        // APP 2: TRIANGULACIÓN
+        // ==========================================
+        const AppTriangulacion = (() => {
+            const canvas = document.getElementById('canvasTriangulacion'); const ctx = canvas.getContext('2d');
+            const btnAnimar = document.getElementById('btnAnimarTri'); const selectBanda = document.getElementById('bandaSelect');
+            const uiBase = document.getElementById('triBase'); const uiAlt1 = document.getElementById('triAlt1');
+            const uiAlt2 = document.getElementById('triAlt2'); const uiFormula = document.getElementById('triFormula'); const uiPunto = document.getElementById('triPunto');
+            const uiDecor = document.getElementById('triDecor'); const uiTitle = document.getElementById('triTitle');
+            const gridToggle = document.getElementById('gridToggle');
+
+            const padding = 80; const playW = 840; const playH = 420; const playX = padding; const playY = padding; const dia = playW / 8;
+            let isActive = false; let isAnimating = false; let animProgress = 0; let trail = []; let loopId; let isPossible = true;
+            let showGrid = true;
+            let ball = { x: playX + dia*1.5, y: playY + playH - dia*1.5, radius: 15 };
+            let targetObj = { x: playX + dia*6.5, y: playY + playH - dia*3.5, radius: 18 };
+            let ptAttack = { x: 0, y: playY }; let draggedItem = null; let originalBallPos = {x: 0, y: 0};
+
+            function resetPositions() {
+                ball.x = playX + dia*1.5; ball.y = playY + playH - dia*1.5;
+                targetObj.x = playX + dia*6.5; targetObj.y = playY + playH - dia*3.5;
+                CanvasUtils.setupRetina(canvas, ctx, playW + padding*2, playH + padding*2);
+                updateMath();
+            }
+
+            function handleDown(e) {
+                if(isAnimating || !isActive) return; const pos = CanvasUtils.getTouchPos(canvas, e); const dist = (p1, p2) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                if (dist(pos, ball) <= ball.radius * 4) { draggedItem = 'ball'; e.preventDefault(); }
+                else if (dist(pos, targetObj) <= targetObj.radius * 4) { draggedItem = 'target'; e.preventDefault(); }
+            }
+            function handleMove(e) {
+                if (!draggedItem || isAnimating || !isActive) return; e.preventDefault(); const pos = CanvasUtils.getTouchPos(canvas, e);
+                pos.x = Math.max(playX + 15, Math.min(playX + playW - 15, pos.x)); pos.y = Math.max(playY + 15, Math.min(playY + playH - 15, pos.y));
+                
+                if (showGrid) {
+                    pos.x = MathUtils.applySnapping(pos.x - playX, dia / 2) + playX;
+                    pos.y = MathUtils.applySnapping(pos.y - playY, dia / 2) + playY;
+                    pos.x = Math.max(playX, Math.min(playX + playW, pos.x));
+                    pos.y = Math.max(playY, Math.min(playY + playH, pos.y));
+                }
+
+                if (draggedItem === 'ball') { ball.x = pos.x; ball.y = pos.y; } 
+                else if (draggedItem === 'target') { targetObj.x = pos.x; targetObj.y = pos.y; }
+                updateMath();
+            }
+
+            let calcData = { base: 0, h1: 0, h2: 0, shift: 0, banda: 'bottom' };
+            function updateMath() {
+                calcData.banda = selectBanda.value; let mirrorX = targetObj.x, mirrorY = targetObj.y; let h1Px = 0, h2Px = 0, basePx = 0;
+                if (calcData.banda === 'bottom') {
+                    mirrorY = (playY + playH) + ((playY + playH) - targetObj.y); h1Px = (playY + playH) - ball.y; h2Px = (playY + playH) - targetObj.y; basePx = Math.abs(targetObj.x - ball.x);
+                    let dx = mirrorX - ball.x; let dy = mirrorY - ball.y; ptAttack.y = playY + playH; ptAttack.x = ball.x + (ptAttack.y - ball.y) * (dx / dy);
+                } else if (calcData.banda === 'top') {
+                    mirrorY = playY - (targetObj.y - playY); h1Px = ball.y - playY; h2Px = targetObj.y - playY; basePx = Math.abs(targetObj.x - ball.x);
+                    let dx = mirrorX - ball.x; let dy = mirrorY - ball.y; ptAttack.y = playY; ptAttack.x = ball.x + (ptAttack.y - ball.y) * (dx / dy);
+                } else if (calcData.banda === 'left') {
+                    mirrorX = playX - (targetObj.x - playX); h1Px = ball.x - playX; h2Px = targetObj.x - playX; basePx = Math.abs(targetObj.y - ball.y);
+                    let dx = mirrorX - ball.x; let dy = mirrorY - ball.y; ptAttack.x = playX; ptAttack.y = ball.y + (ptAttack.x - ball.x) * (dy / dx);
+                } else if (calcData.banda === 'right') {
+                    mirrorX = (playX + playW) + ((playX + playW) - targetObj.x); h1Px = (playX + playW) - ball.x; h2Px = (playX + playW) - targetObj.x; basePx = Math.abs(targetObj.y - ball.y);
+                    let dx = mirrorX - ball.x; let dy = mirrorY - ball.y; ptAttack.x = playX + playW; ptAttack.y = ball.y + (ptAttack.x - ball.x) * (dy / dx);
+                }
+                calcData.h1 = h1Px / dia; calcData.h2 = h2Px / dia; calcData.base = basePx / dia; calcData.shift = calcData.base * (calcData.h1 / (calcData.h1 + calcData.h2));
+                
+                if(calcData.banda === 'bottom' || calcData.banda === 'top') { isPossible = (ptAttack.x >= playX && ptAttack.x <= playX + playW); }
+                else { isPossible = (ptAttack.y >= playY && ptAttack.y <= playY + playH); }
+
+                uiBase.textContent = calcData.base.toFixed(0) + " D"; uiAlt1.textContent = calcData.h1.toFixed(0) + " D"; uiAlt2.textContent = calcData.h2.toFixed(0) + " D";
+                uiFormula.textContent = `${calcData.base.toFixed(0)} × [${calcData.h1.toFixed(0)} ÷ ${(calcData.h1 + calcData.h2).toFixed(0)}]`; uiPunto.textContent = calcData.shift.toFixed(0) + " D";
+
+                btnAnimar.disabled = !isPossible;
+                uiPunto.style.color = isPossible ? '' : '#ef4444'; uiTitle.style.color = isPossible ? '' : '#ef4444';
+                uiTitle.textContent = isPossible ? '2. Cálculo Numérico (Diamantes)' : 'TIRO IMPOSIBLE'; uiDecor.style.backgroundColor = isPossible ? '' : '#ef4444';
+            }
+
+            function draw() {
+                if(!isActive) return;
+                ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                CanvasUtils.drawBaseTable(ctx, playX, playY, playW, playH);
+                CanvasUtils.drawStandardDiamonds(ctx, playX, playY, playW, playH, showGrid);
+
+                if (!isAnimating && animProgress === 0) {
+                    let bx = ball.x, by = ball.y, tx = targetObj.x, ty = targetObj.y, ax = ptAttack.x, ay = ptAttack.y;
+                    let cx, cy, bx_c, by_c, tx_c, ty_c;
+                    if (calcData.banda === 'bottom' || calcData.banda === 'top') {
+                        bx_c = bx; by_c = ay; tx_c = tx; ty_c = ay; cx = ax; 
+                        if (Math.abs(tx - bx_c) > 0.01) { let m1 = (ty - by_c) / (tx - bx_c); cy = by_c + m1 * (cx - bx_c); } else { cy = by_c + (ty - by_c) / 2; }
+                    } else { 
+                        bx_c = ax; by_c = by; tx_c = ax; ty_c = ty; cy = ay; 
+                        if (Math.abs(ty - by_c) > 0.01) { let m1 = (tx - bx_c) / (ty - by_c); cx = bx_c + m1 * (cy - by_c); } else { cx = bx_c + (tx - bx_c) / 2; }
+                    }
+
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 3; ctx.setLineDash([8,8]);
+                    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx_c, by_c); ctx.lineTo(tx_c, ty_c); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
+                    
+                    ctx.strokeStyle = isPossible ? 'rgba(236, 72, 153, 1)' : '#ef4444'; ctx.lineWidth = 4; ctx.setLineDash([8, 8]);
+                    ctx.beginPath(); ctx.moveTo(bx_c, by_c); ctx.lineTo(tx, ty); ctx.moveTo(tx_c, ty_c); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]);
+                    
+                    ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI*2); ctx.fillStyle = isPossible ? '#ec4899' : '#ef4444'; ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ax, ay); ctx.strokeStyle = isPossible ? '#ec4899' : '#ef4444'; ctx.lineWidth = 4; ctx.stroke();
+                    
+                    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(ax, ay); ctx.lineTo(tx, ty); 
+                    ctx.strokeStyle = isPossible ? 'rgba(52, 211, 153, 0.15)' : 'rgba(239, 68, 68, 0.15)'; ctx.lineWidth = 24; ctx.stroke();
+                    ctx.strokeStyle = isPossible ? '#10b981' : '#ef4444'; ctx.lineWidth = 6; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(ax, ay, 10, 0, Math.PI*2); ctx.fillStyle = isPossible ? '#10b981' : '#ef4444'; ctx.fill();
+
+                    if(isPossible) CanvasUtils.drawPostImpact(ctx, ax, ay, tx, ty);
+                }
+
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, targetObj.radius + Math.sin(Date.now()/150)*4, 0, Math.PI*2); ctx.fillStyle = 'rgba(239, 68, 68, 0.4)'; ctx.fill();
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, targetObj.radius - 4, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
+                trail.forEach((t, i) => { ctx.beginPath(); ctx.arc(t.x, t.y, ball.radius * 0.7, 0, Math.PI*2); ctx.fillStyle = `rgba(255, 255, 255, ${(i / trail.length) * 0.4})`; ctx.fill(); });
+                ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth=1; ctx.stroke();
+                ctx.restore();
+            }
+
+            function animate() {
+                if (!isAnimating || !isActive || !isPossible) return;
+                animProgress += 0.03; trail.push({x: ball.x, y: ball.y}); if (trail.length > 25) trail.shift(); 
+                if (animProgress <= 1) { ball.x = MathUtils.lerp(originalBallPos.x, ptAttack.x, animProgress); ball.y = MathUtils.lerp(originalBallPos.y, ptAttack.y, animProgress); } 
+                else if (animProgress <= 2) { let ap2 = animProgress - 1; ball.x = MathUtils.lerp(ptAttack.x, targetObj.x, ap2); ball.y = MathUtils.lerp(ptAttack.y, targetObj.y, ap2); } 
+                else {
+                    isAnimating = false; ball.x = targetObj.x; ball.y = targetObj.y; 
+                    setTimeout(() => { ball.x = originalBallPos.x; ball.y = originalBallPos.y; trail = []; animProgress = 0; isAnimating = false; btnAnimar.classList.remove('hidden'); updateMath(); }, 1200);
+                    let fade = setInterval(() => { trail.shift(); if(trail.length===0) clearInterval(fade); }, 40);
+                }
+            }
+
+            canvas.addEventListener('mousedown', handleDown); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', () => draggedItem = null);
+            canvas.addEventListener('touchstart', handleDown, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchend', () => draggedItem = null);
+            selectBanda.addEventListener('change', updateMath);
+            gridToggle.addEventListener('change', e => { showGrid = e.target.checked; updateMath(); });
+            btnAnimar.addEventListener('click', () => { if(isAnimating || !isPossible) return; isAnimating = true; animProgress = 0; trail = []; originalBallPos = {x: ball.x, y: ball.y}; btnAnimar.classList.add('hidden'); });
+            function loop() { if(isActive) { if(isAnimating) animate(); draw(); } loopId = requestAnimationFrame(loop); }
+            return { init: () => { resetPositions(); loop(); }, pause: () => { isActive = false; cancelAnimationFrame(loopId); }, resume: () => { isActive = true; updateMath(); loop(); }, reset: resetPositions };
+        })();
+
+
+        // ==========================================
+        // APP 3: SISTEMA PLUS (2 BANDAS)
+        // ==========================================
+        const AppPlus = (() => {
+            const canvas = document.getElementById('canvasPlus'); const ctx = canvas.getContext('2d');
+            const uiSalida = document.getElementById('plusSalida'); const uiAtaque = document.getElementById('plusAtaque'); const uiAtaqueText = document.getElementById('plusAtaqueText');
+            const uiLlegada = document.getElementById('plusLlegada'); const btnAnimar = document.getElementById('btnAnimarPlus');
+            const plusSelect = document.getElementById('plusSelect'); const gridToggle = document.getElementById('gridTogglePlus');
+            const uiDecor = document.getElementById('plusDecor'); const uiTitle = document.getElementById('plusTitle');
+            
+            const padding = 60; const playW = 800; const playH = 400; const playX = padding; const playY = padding; 
+            const segmentX = playW / 8; const segmentY = playH / 4; 
+
+            let isActive = false; let isAnimating = false; let animProgress = 0; let trail = []; let loopId; let isPossible = true;
+            let showGrid = false;
+            let ball = { x: playX + segmentX * 5, y: playY + playH - 15, radius: 15 }; 
+            let targetObj = { x: playX + segmentX * 1, y: playY + segmentY * 1, radius: 18 }; 
+            let ptAttack = { x: playX, y: playY }; 
+            let ptTopRail = { x: playX + playW/2, y: playY };
+            let draggedItem = null; let originalBallPos = {x:0, y:0};
+
+            function resetPositions() {
+                CanvasUtils.setupRetina(canvas, ctx, playW + padding*2, playH + padding*2);
+                let isLeft = plusSelect.value === 'left';
+                if (isLeft) {
+                    ball.x = playX + segmentX * 2.7; 
+                    targetObj.x = playX + 773.333;   
+                } else {
+                    ball.x = playX + playW - segmentX * 2.7; 
+                    targetObj.x = playX + playW - 773.333; 
+                }
+                ball.y = playY + playH - 20; targetObj.y = playY + playH - 20;
+                originalBallPos = {x: ball.x, y: ball.y};
+                updateMath();
+            }
+
+            function handleDown(e) {
+                if(isAnimating || !isActive) return; const pos = CanvasUtils.getTouchPos(canvas, e);
+                if (Math.hypot(pos.x - ball.x, pos.y - ball.y) <= ball.radius * 4) { draggedItem = 'ball'; e.preventDefault(); }
+                else if (Math.hypot(pos.x - targetObj.x, pos.y - targetObj.y) <= targetObj.radius * 4) { draggedItem = 'target'; e.preventDefault(); }
+            }
+            function handleMove(e) {
+                if (!draggedItem || isAnimating || !isActive) return; e.preventDefault(); const pos = CanvasUtils.getTouchPos(canvas, e);
+                let boundX = Math.max(playX + 15, Math.min(playX + playW - 15, pos.x));
+                let boundY = Math.max(playY + 15, Math.min(playY + playH - 15, pos.y));
+                
+                if (showGrid) {
+                    boundX = MathUtils.applySnapping(boundX - playX, segmentX / 2) + playX;
+                    boundY = MathUtils.applySnapping(boundY - playY, segmentY / 2) + playY;
+                    boundX = Math.max(playX, Math.min(playX + playW, boundX));
+                    boundY = Math.max(playY, Math.min(playY + playH, boundY));
+                }
+
+                if (draggedItem === 'ball') { ball.x = boundX; ball.y = boundY; }
+                else if (draggedItem === 'target') { targetObj.x = boundX; targetObj.y = boundY; }
+                updateMath();
+            }
+
+            let calcData = { salida: 0, ataque: 0, llegada: 80 };
+            function updateMath() {
+                let isLeft = plusSelect.value === 'left';
+                let bestA = 0; let minDistA = Infinity;
+                let bestD = 0; let finalS = 0;
+
+                for (let A = 10; A <= 90; A += 0.5) {
+                    let xA, yA;
+                    if (isLeft) { xA = playX; yA = playY + ((A - 10) / 20) * segmentY; } 
+                    else { xA = playX + playW; yA = playY + ((A - 10) / 20) * segmentY; }
+                    
+                    let yS_rail = playY + playH; let dxS = (ball.x - xA); let dyS = (ball.y - yA); if (dyS === 0) dyS = 0.0001;
+                    let xS = xA + (yS_rail - yA) * dxS / dyS;
+                    let S = isLeft ? ((xS - playX) / segmentX) * 10 : ((playX + playW - xS) / segmentX) * 10;
+                    
+                    let yD_rail = playY + playH;
+                    let D = S + A;
+                    let xD = isLeft ? playX + (D / 10) * segmentX : playX + playW - (D / 10) * segmentX;
+                    
+                    let xD_mirror = xD; let yD_mirror = playY - playH;
+                    let pTop = {x: xA + (playY - yA) * (xD_mirror - xA) / (yD_mirror - yA), y: playY};
+
+                    let dist = Math.min(MathUtils.distToSegment(targetObj, {x:xA, y:yA}, pTop), MathUtils.distToSegment(targetObj, pTop, {x:xD, y:yD_rail}));
+                    if (dist < minDistA) { minDistA = dist; bestA = A; finalS = S; bestD = D; ptTopRail = pTop; }
+                }
+
+                calcData.ataque = bestA; calcData.salida = finalS; calcData.llegada = bestD;
+                
+                if (isLeft) { ptAttack.x = playX; ptAttack.y = playY + ((bestA - 10) / 20) * segmentY; } 
+                else { ptAttack.x = playX + playW; ptAttack.y = playY + ((bestA - 10) / 20) * segmentY; }
+
+                isPossible = (minDistA < 2 && finalS >= 0 && finalS <= 80 && bestD >= 0 && bestD <= 100 && ptAttack.y >= playY && ptAttack.y <= playY + playH);
+
+                let target_my = playY - (targetObj.y - playY);
+                if (target_my !== ptAttack.y) {
+                    ptTopRail.x = ptAttack.x + (playY - ptAttack.y) * (targetObj.x - ptAttack.x) / (target_my - ptAttack.y);
+                } else {
+                    ptTopRail.x = playX + playW/2;
+                }
+                ptTopRail.y = playY;
+                ptTopRail.x = Math.max(playX, Math.min(playX + playW, ptTopRail.x));
+
+                uiSalida.textContent = calcData.salida.toFixed(0); uiLlegada.textContent = calcData.llegada.toFixed(0); 
+                uiAtaque.textContent = calcData.ataque.toFixed(0); uiAtaqueText.textContent = calcData.ataque.toFixed(0);
+
+                btnAnimar.disabled = !isPossible;
+                uiAtaque.style.color = isPossible ? '' : '#ef4444'; uiAtaqueText.style.color = isPossible ? '' : '#ef4444';
+                uiTitle.style.color = isPossible ? '' : '#ef4444'; uiTitle.textContent = isPossible ? 'Cálculo de 2 Bandas' : 'TIRO IMPOSIBLE';
+                uiDecor.style.backgroundColor = isPossible ? '' : '#ef4444';
+            }
+
+            function drawTable() {
+                CanvasUtils.drawBaseTable(ctx, playX, playY, playW, playH);
+                CanvasUtils.drawStandardDiamonds(ctx, playX, playY, playW, playH, showGrid);
+                ctx.font = 'bold 16px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                let isLeft = plusSelect.value === 'left';
+                
+                for(let i=0; i<=8; i++) {
+                    let px = playX + i * segmentX; let val = isLeft ? i * 10 : (8 - i) * 10;
+                    ctx.fillStyle = '#fde047'; ctx.fillText(val, px, playY + playH + 35); 
+                }
+                for(let i=0; i<=4; i++) {
+                    let py = playY + i * segmentY; let valAtaque = 10 + i * 20;
+                    ctx.fillStyle = '#ef4444'; 
+                    if (isLeft) { ctx.fillText(valAtaque, playX - 35, py); } else { ctx.fillText(valAtaque, playX + playW + 35, py); }
+                }
+            }
+
+            function draw() {
+                if(!isActive) return;
+                ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                drawTable();
+
+                if (!isAnimating && animProgress === 0) {
+                    ctx.beginPath(); ctx.moveTo(ball.x, ball.y); ctx.lineTo(ptAttack.x, ptAttack.y); ctx.lineTo(ptTopRail.x, ptTopRail.y); ctx.lineTo(targetObj.x, targetObj.y);
+                    ctx.strokeStyle = isPossible ? 'rgba(232, 121, 249, 0.25)' : 'rgba(239, 68, 68, 0.15)'; ctx.lineWidth = 24; ctx.stroke();
+                    ctx.strokeStyle = isPossible ? '#e879f9' : '#ef4444'; ctx.setLineDash([8, 8]); ctx.lineWidth = 4; ctx.stroke(); ctx.setLineDash([]);
+                    ctx.beginPath(); ctx.arc(ptAttack.x, ptAttack.y, 7, 0, Math.PI*2); ctx.fillStyle = isPossible ? '#e879f9' : '#ef4444'; ctx.fill();
+                    
+                    if(isPossible) CanvasUtils.drawPostImpact(ctx, ptTopRail.x, ptTopRail.y, targetObj.x, targetObj.y);
+                }
+
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, targetObj.radius + Math.sin(Date.now()/150)*4, 0, Math.PI*2); ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; ctx.fill();
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, targetObj.radius - 4, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
+
+                trail.forEach((t, i) => { ctx.beginPath(); ctx.arc(t.x, t.y, ball.radius * 0.7, 0, Math.PI*2); ctx.fillStyle = `rgba(255, 255, 255, ${(i / trail.length) * 0.4})`; ctx.fill(); });
+                
+                ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
+                
+                let isLeft = plusSelect.value === 'left';
+                let spinAngle = isLeft ? (-Math.PI / 6) : (-5 * Math.PI / 6);
+                let dotX = ball.x + Math.cos(spinAngle) * (ball.radius * 0.6); let dotY = ball.y + Math.sin(spinAngle) * (ball.radius * 0.6);
+                ctx.beginPath(); ctx.arc(dotX, dotY, 4, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
+                ctx.font = 'bold 10px Inter'; ctx.fillStyle = '#fff'; ctx.fillText(isLeft ? '2h' : '10h', isLeft ? ball.x + 20 : ball.x - 20, ball.y - 15);
+                ctx.restore();
+            }
+
+            function animate() {
+                if (!isAnimating || !isActive || !isPossible) return;
+                animProgress += 0.03; trail.push({x: ball.x, y: ball.y}); if (trail.length > 25) trail.shift(); 
+                if (animProgress <= 1) { ball.x = MathUtils.lerp(originalBallPos.x, ptAttack.x, animProgress); ball.y = MathUtils.lerp(originalBallPos.y, ptAttack.y, animProgress); } 
+                else if (animProgress <= 2) { let ap2 = animProgress - 1; ball.x = MathUtils.lerp(ptAttack.x, ptTopRail.x, ap2); ball.y = MathUtils.lerp(ptAttack.y, ptTopRail.y, ap2); } 
+                else if (animProgress <= 3) { let ap3 = animProgress - 2; ball.x = MathUtils.lerp(ptTopRail.x, targetObj.x, ap3); ball.y = MathUtils.lerp(ptTopRail.y, targetObj.y, ap3); }
+                else {
+                    isAnimating = false; ball.x = targetObj.x; ball.y = targetObj.y;
+                    setTimeout(() => {
+                        ball.x = originalBallPos.x; ball.y = originalBallPos.y; trail = []; animProgress = 0; isAnimating = false;
+                        btnAnimar.classList.remove('hidden'); updateMath();
+                    }, 1200);
+                    let fade = setInterval(() => { trail.shift(); if(trail.length===0) clearInterval(fade); }, 40);
+                }
+            }
+
+            canvas.addEventListener('mousedown', handleDown); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', () => draggedItem = null);
+            canvas.addEventListener('touchstart', handleDown, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchend', () => draggedItem = null);
+            plusSelect.addEventListener('change', resetPositions);
+            gridToggle.addEventListener('change', e => { showGrid = e.target.checked; updateMath(); });
+            btnAnimar.addEventListener('click', () => { if(isAnimating || !isPossible) return; isAnimating = true; animProgress = 0; trail = []; originalBallPos = {x: ball.x, y: ball.y}; btnAnimar.classList.add('hidden'); });
+            function loop() { if(isActive) { if(isAnimating) animate(); draw(); } loopId = requestAnimationFrame(loop); }
+            return { init: () => { resetPositions(); loop(); }, pause: () => { isActive = false; cancelAnimationFrame(loopId); }, resume: () => { isActive = true; updateMath(); loop(); }, reset: resetPositions };
+        })();
+
+
+        // ==========================================
+        // APP 4: SISTEMA SID (BANDA PREVIA / BRICOLE)
+        // ==========================================
+        const AppSid = (() => {
+            const canvas = document.getElementById('canvasSid'); const ctx = canvas.getContext('2d');
+            const uiSalida = document.getElementById('sidSalida'); const uiLlegada = document.getElementById('sidLlegada'); 
+            const uiAtaque = document.getElementById('sidAtaque'); const uiAtaqueText = document.getElementById('sidAtaqueText');
+            const btnAnimar = document.getElementById('btnAnimarSid'); const sidSelect = document.getElementById('sidSelect');
+            const uiDecor = document.getElementById('sidDecor'); const uiTitle = document.getElementById('sidTitle');
+            const gridToggle = document.getElementById('gridToggleSid');
+            
+            const padding = 60; const playW = 800; const playH = 400; const playX = padding; const playY = padding; 
+            const segmentX = playW / 8; const segmentY = playH / 4; 
+
+            let isActive = false; let isAnimating = false; let animProgress = 0; let trail = []; let loopId; let isPossible = true;
+            let showGrid = false;
+            let ball = { x: 0, y: 0, radius: 15 }; 
+            let targetObj = { x: 0, y: 0, radius: 18 }; 
+            let ptAttack = { x: playX + playW/2, y: playY }; 
+            let draggedItem = null; let originalBallPos = {x:0, y:0};
+            let ptLlegada_phys = {x: 0, y: 0};
+
+            function resetPositions() {
+                CanvasUtils.setupRetina(canvas, ctx, playW + padding*2, playH + padding*2);
+                let modo = sidSelect.value;
+                if (modo === 'larga') {
+                    ball.x = playX + 60; ball.y = playY + playH - segmentY * 2; 
+                    targetObj.x = playX + segmentX * 4; targetObj.y = playY + playH - 60; 
+                } else {
+                    ball.x = playX + segmentX * 4; ball.y = playY + playH - 60; 
+                    targetObj.x = playX + playW - 60; targetObj.y = playY + playH - segmentY * 2; 
+                }
+                originalBallPos = {x: ball.x, y: ball.y};
+                updateMath();
+            }
+
+            function handleDown(e) {
+                if(isAnimating || !isActive) return; const pos = CanvasUtils.getTouchPos(canvas, e);
+                if (Math.hypot(pos.x - ball.x, pos.y - ball.y) <= ball.radius * 4) { draggedItem = 'ball'; e.preventDefault(); }
+                else if (Math.hypot(pos.x - targetObj.x, pos.y - targetObj.y) <= targetObj.radius * 4) { draggedItem = 'target'; e.preventDefault(); }
+            }
+            function handleMove(e) {
+                if (!draggedItem || isAnimating || !isActive) return; e.preventDefault(); const pos = CanvasUtils.getTouchPos(canvas, e);
+                let boundX = Math.max(playX + 15, Math.min(playX + playW - 15, pos.x));
+                let boundY = Math.max(playY + 15, Math.min(playY + playH - 15, pos.y));
+                
+                if (showGrid) {
+                    boundX = MathUtils.applySnapping(boundX - playX, segmentX / 2) + playX;
+                    boundY = MathUtils.applySnapping(boundY - playY, segmentY / 2) + playY;
+                    boundX = Math.max(playX, Math.min(playX + playW, boundX));
+                    boundY = Math.max(playY, Math.min(playY + playH, boundY));
+                }
+
+                if (draggedItem === 'ball') { ball.x = boundX; ball.y = boundY; }
+                else if (draggedItem === 'target') { targetObj.x = boundX; targetObj.y = boundY; }
+                updateMath();
+            }
+
+            let calcData = { salida: 0, llegada: 0, ataque: 0 };
+            function updateMath() {
+                let modo = sidSelect.value;
+                let bestA = 0; let minDistA = Infinity;
+                let finalS = 0; let finalL = 0;
+                let tempLlegada = {x: 0, y: 0};
+
+                for (let A = 1; A <= 80; A += 0.5) {
+                    if (modo === 'larga') {
+                        if (A > 40) continue;
+                        let xA = playX + playW; let yA = playY + playH - (A / 10) * segmentY;
+                        
+                        let xS_rail = playX; let dxS = ball.x - xA; if (dxS === 0) dxS = 0.0001;
+                        let yS = yA + (xS_rail - xA) * (ball.y - yA) / dxS;
+                        let S = (playY + playH - yS) / segmentY;
+                        
+                        let yL = playY + playH; 
+                        let dyL = targetObj.y - yA; if (dyL === 0) dyL = 0.0001;
+                        let xL = xA + (yL - yA) * (targetObj.x - xA) / dyL;
+                        let distFromRight = (playX + playW - xL) / segmentX;
+                        let L = distFromRight <= 2 ? distFromRight : 2 + (distFromRight - 2) * 0.5;
+                        
+                        let error = Math.abs(A - (S * L));
+                        if (error < minDistA) {
+                            minDistA = error; bestA = A; finalS = S; finalL = L;
+                            tempLlegada = {x: xL, y: yL};
+                        }
+                    } else {
+                        let yA = playY; let xA = playX + playW - (A / 10) * segmentX;
+                        
+                        let yS_rail = playY + playH; 
+                        let dyS = ball.y - yA; if (dyS === 0) dyS = 0.0001;
+                        let xS = xA + (yS_rail - yA) * (ball.x - xA) / dyS;
+                        let S = (playX + playW - xS) / segmentX;
+                        
+                        let xL = playX + playW; 
+                        let dxL = targetObj.x - xA; if (dxL === 0) dxL = 0.0001;
+                        let yL = yA + (xL - xA) * (targetObj.y - yA) / dxL;
+                        let distFromTop = (yL - playY) / segmentY;
+                        let L = distFromTop <= 1 ? distFromTop * 2 : 2 + (distFromTop - 1); 
+                        
+                        let error = Math.abs(A - (S * L));
+                        if (error < minDistA) {
+                            minDistA = error; bestA = A; finalS = S; finalL = L;
+                            tempLlegada = {x: xL, y: yL};
+                        }
+                    }
+                }
+
+                calcData.ataque = bestA; calcData.salida = finalS; calcData.llegada = finalL;
+                ptLlegada_phys = tempLlegada;
+                
+                if (modo === 'larga') {
+                    ptAttack.x = playX + playW; ptAttack.y = playY + playH - (bestA / 10) * segmentY;
+                } else {
+                    ptAttack.y = playY; ptAttack.x = playX + playW - (bestA / 10) * segmentX;
+                }
+
+                isPossible = (minDistA < 5.0 && finalS >= -5 && finalL >= -5);
+
+                uiSalida.textContent = calcData.salida.toFixed(0); uiLlegada.textContent = calcData.llegada.toFixed(0);
+                uiAtaque.textContent = calcData.ataque.toFixed(0); uiAtaqueText.textContent = calcData.ataque.toFixed(0);
+
+                btnAnimar.disabled = !isPossible;
+                uiAtaque.style.color = isPossible ? '' : '#ef4444'; uiAtaqueText.style.color = isPossible ? '' : '#ef4444';
+                uiTitle.style.color = isPossible ? '' : '#ef4444'; uiTitle.textContent = isPossible ? 'Ecuación SID' : 'TIRO IMPOSIBLE';
+                uiDecor.style.backgroundColor = isPossible ? '' : '#ef4444';
+            }
+
+            function drawTable() {
+                CanvasUtils.drawBaseTable(ctx, playX, playY, playW, playH);
+                CanvasUtils.drawStandardDiamonds(ctx, playX, playY, playW, playH, showGrid);
+                ctx.font = 'bold 16px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                let modo = sidSelect.value;
+
+                if (modo === 'larga') {
+                    for(let i=0; i<=4; i++) { ctx.fillStyle='#fde047'; ctx.fillText(i, playX-35, playY + playH - i*segmentY); }
+                    for(let i=0; i<=8; i++) { 
+                        let val = i <= 2 ? i : 2 + (i-2)*0.5;
+                        ctx.fillStyle='#f87171'; ctx.fillText(val, playX + playW - i*segmentX, playY+playH+35); 
+                    }
+                    for(let i=0; i<=4; i++) { ctx.fillStyle='#fb923c'; ctx.fillText(i*10, playX+playW+35, playY + playH - i*segmentY); }
+                } else {
+                    for(let i=0; i<=8; i++) { ctx.fillStyle='#fde047'; ctx.fillText(i, playX + playW - i*segmentX, playY+playH+35); }
+                    for(let i=0; i<=4; i++) { 
+                        let val = i === 0 ? 0 : i + 1;
+                        ctx.fillStyle='#f87171'; ctx.fillText(val, playX+playW+35, playY + i*segmentY); 
+                    }
+                    for(let i=0; i<=8; i++) { ctx.fillStyle='#fb923c'; ctx.fillText(i*10, playX + playW - i*segmentX, playY-35); }
+                }
+            }
+
+            function draw() {
+                if(!isActive) return;
+                ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                drawTable();
+
+                if (!isAnimating && animProgress === 0) {
+                    let S_pt = {x: 0, y: 0};
+                    let modo = sidSelect.value;
+                    if (modo === 'larga') {
+                        S_pt = {x: playX, y: playY + playH - calcData.salida * segmentY};
+                    } else {
+                        S_pt = {x: playX + playW - calcData.salida * segmentX, y: playY + playH};
+                    }
+
+                    ctx.beginPath(); ctx.moveTo(S_pt.x, S_pt.y); ctx.lineTo(ptAttack.x, ptAttack.y); ctx.lineTo(ptLlegada_phys.x, ptLlegada_phys.y);
+                    ctx.strokeStyle = isPossible ? 'rgba(249, 115, 22, 0.15)' : 'rgba(239, 68, 68, 0.15)'; ctx.lineWidth = 24; ctx.stroke();
+                    ctx.strokeStyle = isPossible ? 'rgba(249, 115, 22, 0.8)' : '#ef4444'; ctx.setLineDash([8, 8]); ctx.lineWidth = 4; ctx.stroke(); ctx.setLineDash([]);
+                    ctx.beginPath(); ctx.arc(ptAttack.x, ptAttack.y, 7, 0, Math.PI*2); ctx.fillStyle = isPossible ? '#fb923c' : '#ef4444'; ctx.fill();
+                    
+                    if(isPossible) CanvasUtils.drawPostImpact(ctx, ptAttack.x, ptAttack.y, targetObj.x, targetObj.y);
+                }
+
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, targetObj.radius + Math.sin(Date.now()/150)*4, 0, Math.PI*2); ctx.fillStyle = 'rgba(239, 68, 68, 0.4)'; ctx.fill();
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, targetObj.radius - 4, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
+
+                trail.forEach((t, i) => { ctx.beginPath(); ctx.arc(t.x, t.y, ball.radius * 0.7, 0, Math.PI*2); ctx.fillStyle = `rgba(255, 255, 255, ${(i / trail.length) * 0.4})`; ctx.fill(); });
+                ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+                ctx.restore();
+            }
+
+            function animate() {
+                if (!isAnimating || !isActive || !isPossible) return;
+                animProgress += 0.03; trail.push({x: ball.x, y: ball.y}); if (trail.length > 25) trail.shift(); 
+                
+                if (animProgress <= 1) { 
+                    ball.x = MathUtils.lerp(originalBallPos.x, ptAttack.x, animProgress); 
+                    ball.y = MathUtils.lerp(originalBallPos.y, ptAttack.y, animProgress); 
+                } 
+                else if (animProgress <= 2) { 
+                    ball.x = MathUtils.lerp(ptAttack.x, targetObj.x, animProgress - 1); 
+                    ball.y = MathUtils.lerp(ptAttack.y, targetObj.y, animProgress - 1); 
+                } 
+                else {
+                    isAnimating = false; ball.x = targetObj.x; ball.y = targetObj.y;
+                    setTimeout(() => { ball.x = originalBallPos.x; ball.y = originalBallPos.y; trail = []; animProgress = 0; isAnimating = false; btnAnimar.classList.remove('hidden'); updateMath(); }, 1200);
+                    let fade = setInterval(() => { trail.shift(); if(trail.length===0) clearInterval(fade); }, 40);
+                }
+            }
+
+            canvas.addEventListener('mousedown', handleDown); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', () => draggedItem = null);
+            canvas.addEventListener('touchstart', handleDown, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchend', () => draggedItem = null);
+            sidSelect.addEventListener('change', resetPositions);
+            gridToggle.addEventListener('change', e => { showGrid = e.target.checked; updateMath(); });
+            btnAnimar.addEventListener('click', () => { if(isAnimating || !isPossible) return; isAnimating = true; animProgress = 0; trail = []; originalBallPos = {x: ball.x, y: ball.y}; btnAnimar.classList.add('hidden'); });
+            function loop() { if(isActive) { if(isAnimating) animate(); draw(); } loopId = requestAnimationFrame(loop); }
+            return { init: () => { resetPositions(); loop(); }, pause: () => { isActive = false; cancelAnimationFrame(loopId); }, resume: () => { isActive = true; updateMath(); loop(); }, reset: resetPositions };
+        })();
+
+
+        // ==========================================
+        // APP 5: BASE 50 (SISTEMA DIAMANTE LKL)
+        // ==========================================
+        const AppBase50 = (() => {
+            const canvas = document.getElementById('canvasBase50'); const ctx = canvas.getContext('2d');
+            const uiSalida = document.getElementById('base50Salida'); const uiLlegada = document.getElementById('base50Llegada'); 
+            const uiAtaque = document.getElementById('base50Ataque'); const uiAtaqueText = document.getElementById('base50AtaqueText');
+            const btnAnimar = document.getElementById('btnAnimarBase50'); const uiDecor = document.getElementById('base50Decor'); const uiTitle = document.getElementById('base50Title');
+            const cuartaBandaToggle = document.getElementById('cuartaBandaToggle'); const gridToggle = document.getElementById('gridToggleBase');
+            
+            const paddingX = 90; const paddingYTop = 110; const paddingYBot = 90; 
+            const playW = 800; const playH = 400; const playX = paddingX; const playY = paddingYTop; 
+            const segmentX = playW / 8; const segmentY = playH / 4; 
+
+            let isActive = false; let isAnimating = false; let animProgress = 0; let trail = []; let loopId; let isPossible = true;
+            let show4thRail = false; let showGrid = false;
+            let ball = { x: playX + playW - 20, y: playY + playH - 20, radius: 15 }; 
+            let targetObj = { x: playX + segmentX * 2, y: playY + playH - 20, radius: 18 }; 
+            let ptAttack = { x: playX, y: playY }; 
+            let ptSecondRail = { x: playX, y: playY + playH/2 };
+            let ptThirdRail = { x: playX, y: playY + playH };
+            let ptFourthRail = { x: playX + playW, y: playY + playH };
+            let draggedItem = null; let originalBallPos = {x:0, y:0};
+
+            function resetPositions() {
+                CanvasUtils.setupRetina(canvas, ctx, playW + paddingX * 2, playH + paddingYTop + paddingYBot);
+                ball.x = playX + playW - 20; ball.y = playY + playH - 20; 
+                targetObj.x = playX + segmentX * 2; targetObj.y = playY + playH - 20;
+                originalBallPos = {x: ball.x, y: ball.y};
+                updateMath();
+            }
+
+            function handleDown(e) {
+                if(isAnimating || !isActive) return; const pos = CanvasUtils.getTouchPos(canvas, e);
+                if (Math.hypot(pos.x - ball.x, pos.y - ball.y) <= ball.radius * 4) { draggedItem = 'ball'; e.preventDefault(); }
+                else if (Math.hypot(pos.x - targetObj.x, pos.y - targetObj.y) <= targetObj.radius * 4) { draggedItem = 'target'; e.preventDefault(); }
+            }
+            function handleMove(e) {
+                if (!draggedItem || isAnimating || !isActive) return; e.preventDefault(); const pos = CanvasUtils.getTouchPos(canvas, e);
+                let boundX = Math.max(playX + 15, Math.min(playX + playW - 15, pos.x));
+                let boundY = Math.max(playY + 15, Math.min(playY + playH - 15, pos.y));
+                
+                if (showGrid) {
+                    boundX = MathUtils.applySnapping(boundX - playX, segmentX / 2) + playX;
+                    boundY = MathUtils.applySnapping(boundY - playY, segmentY / 2) + playY;
+                    boundX = Math.max(playX, Math.min(playX + playW, boundX));
+                    boundY = Math.max(playY, Math.min(playY + playH, boundY));
+                }
+
+                if (draggedItem === 'ball') { ball.x = boundX; ball.y = boundY; }
+                else if (draggedItem === 'target') { targetObj.x = boundX; targetObj.y = boundY; }
+                updateMath();
+            }
+
+            function getSalidaPoint(S) {
+                if (S <= 50) { return { x: playX + playW - ((50 - S) / 5) * segmentX, y: playY + playH }; } 
+                else if (S <= 70) { return { x: playX + playW, y: playY + playH - ((S - 50) / 10) * segmentY }; }
+                else { return { x: playX + playW, y: playY + playH - 2 * segmentY - ((S - 70) / 20) * segmentY }; }
+            }
+            function getAttackPoint(A) {
+                let p = {x: 0, y: playY};
+                if (A <= 50) { p.x = playX + (A / 10) * segmentX; } 
+                else { p.x = playX + 5 * segmentX + ((A - 50) / 20) * segmentX; } 
+                return p;
+            }
+            function getThirdRailPoint(L) {
+                let p = {x: 0, y: playY + playH};
+                if (L <= 40) { p.x = playX + (L / 10) * segmentX; } 
+                else { p.x = playX + 4 * segmentX + ((L - 40) / 20) * segmentX; }
+                return p;
+            }
+            function getFourthRailPoint(L) {
+                let p = {x: 0, y: 0};
+                if (L <= 20) { p.x = playX + playW - ((20 - L) / 10) * segmentX; p.y = playY; } 
+                else if (L <= 30) { p.x = playX + playW; p.y = playY + ((L - 20) / 10) * segmentY; }
+                else { p.x = playX + playW; p.y = playY + segmentY + ((L - 30) / 20) * segmentY; } 
+                return p;
+            }
+
+            let calcData = { salida: 0, llegada: 0, ataque: 0 };
+            function updateMath() {
+                let bestL = 0; let minDistL = Infinity;
+                for (let L = 0; L <= 100; L += 0.5) {
+                    let p3 = getThirdRailPoint(L); let p4 = getFourthRailPoint(L);
+                    let dist = MathUtils.distToSegment(targetObj, p3, p4);
+                    if (dist < minDistL) { minDistL = dist; bestL = L; }
+                }
+                calcData.llegada = bestL;
+                ptThirdRail = getThirdRailPoint(bestL);
+                ptFourthRail = getFourthRailPoint(bestL);
+
+                let bestA = 0; let minDistA = Infinity;
+                for (let A = 0; A <= 100; A += 0.5) {
+                    let S = A + bestL;
+                    if (S > 110) continue; 
+                    let pA = getAttackPoint(A); let pS = getSalidaPoint(S);
+                    let dist = MathUtils.distToSegment(ball, pS, pA);
+                    if (dist < minDistA) { minDistA = dist; bestA = A; }
+                }
+                calcData.ataque = bestA;
+                calcData.salida = bestA + bestL;
+                ptAttack = getAttackPoint(bestA);
+
+                let ux = playX - (ptThirdRail.x - playX); 
+                if (ux !== ptAttack.x) { ptSecondRail.y = ptAttack.y + (playX - ptAttack.x) * (ptThirdRail.y - ptAttack.y) / (ux - ptAttack.x); } 
+                else { ptSecondRail.y = playY + playH/2; }
+                ptSecondRail.x = playX;
+
+                isPossible = (ptAttack.x >= playX && ptAttack.x <= playX + playW && ptSecondRail.y >= playY && ptSecondRail.y <= playY + playH);
+
+                uiSalida.textContent = calcData.salida.toFixed(0); uiLlegada.textContent = calcData.llegada.toFixed(0);
+                uiAtaque.textContent = calcData.ataque.toFixed(0); uiAtaqueText.textContent = calcData.ataque.toFixed(0);
+
+                btnAnimar.disabled = !isPossible;
+                uiAtaque.style.color = isPossible ? '' : '#ef4444'; uiAtaqueText.style.color = isPossible ? '' : '#ef4444';
+                uiTitle.style.color = isPossible ? '' : '#ef4444'; uiTitle.textContent = isPossible ? 'Cálculo de Sistema' : 'TIRO IMPOSIBLE';
+                uiDecor.style.backgroundColor = isPossible ? '' : '#ef4444';
+            }
+
+            function drawTable() {
+                CanvasUtils.drawBaseTable(ctx, playX, playY, playW, playH);
+                CanvasUtils.drawStandardDiamonds(ctx, playX, playY, playW, playH, showGrid);
+                ctx.font = 'bold 16px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+                for(let i=0; i<=8; i++) {
+                    let px = playX + (i * segmentX);
+                    let val = i <= 5 ? i * 10 : 50 + (i - 5) * 20;
+                    if (val <= 90) { ctx.fillStyle = '#ef4444'; ctx.fillText(val, px, playY - 35); }
+                    if (i === 5) { ctx.fillText(60, px + segmentX/2, playY - 35); ctx.beginPath(); ctx.arc(px + segmentX/2, playY - 15, 2, 0, Math.PI*2); ctx.fill(); }
+                    if (i === 6) { ctx.fillText(80, px + segmentX/2, playY - 35); ctx.beginPath(); ctx.arc(px + segmentX/2, playY - 15, 2, 0, Math.PI*2); ctx.fill(); }
+                }
+                
+                for(let i=0; i<=8; i++) {
+                    let pxLarga = playX + playW - (i * segmentX);
+                    ctx.fillStyle = '#fde047'; ctx.fillText(50 - i*5, pxLarga, playY + playH + 35); 
+                }
+                for(let i=1; i<=3; i++) {
+                    let valSalidaCorta = i === 3 ? 90 : 50 + i*10;
+                    ctx.fillStyle = '#fde047'; ctx.fillText(valSalidaCorta, playX + playW + 35, playY + playH - i * segmentY); 
+                }
+
+                for(let i=0; i<=7; i++) {
+                    let pxLlegada = playX + (i * segmentX);
+                    let valLlegada = i <= 4 ? i * 10 : 40 + (i - 4) * 20;
+                    if (valLlegada <= 100) { ctx.fillStyle = '#10b981'; ctx.fillText(valLlegada, pxLlegada, playY + playH - 10); }
+                }
+                
+                if (show4thRail) {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillText('20', playX + playW + 65, playY - 65); 
+                    ctx.fillText('15', playX + playW - 0.5*segmentX, playY - 65);
+                    ctx.fillText('10', playX + playW - 1*segmentX, playY - 65);
+                    ctx.fillText('5',  playX + playW - 1.5*segmentX, playY - 65);
+                    ctx.fillText('0',  playX + playW - 2*segmentX, playY - 65);
+                    ctx.fillText('30', playX + playW + 65, playY + segmentY);
+                    ctx.fillText('40', playX + playW + 65, playY + 1.5*segmentY);
+                    ctx.fillText('50', playX + playW + 65, playY + 2*segmentY);
+                    
+                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+                    [0, 5, 10, 15, 20, 30, 40, 50].forEach(val => {
+                        let p3 = getThirdRailPoint(val); let p4 = getFourthRailPoint(val);
+                        ctx.beginPath(); ctx.moveTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y); ctx.stroke();
+                    });
+                    ctx.setLineDash([]);
+                }
+            }
+
+            function draw() {
+                if(!isActive) return;
+                ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                drawTable();
+
+                if (!isAnimating && animProgress === 0) {
+                    let S_pt = getSalidaPoint(calcData.salida);
+                    ctx.beginPath(); ctx.moveTo(S_pt.x, S_pt.y); ctx.lineTo(ptAttack.x, ptAttack.y); ctx.lineTo(ptSecondRail.x, ptSecondRail.y); ctx.lineTo(ptThirdRail.x, ptThirdRail.y); 
+                    if (show4thRail) { ctx.lineTo(ptFourthRail.x, ptFourthRail.y); } else { ctx.lineTo(targetObj.x, targetObj.y); }
+                    ctx.strokeStyle = isPossible ? 'rgba(129, 140, 248, 0.25)' : 'rgba(239, 68, 68, 0.15)'; ctx.lineWidth = 24; ctx.stroke();
+                    ctx.strokeStyle = isPossible ? '#818cf8' : '#ef4444'; ctx.setLineDash([8, 8]); ctx.lineWidth = 4; ctx.stroke(); ctx.setLineDash([]);
+                    ctx.beginPath(); ctx.arc(ptAttack.x, ptAttack.y, 7, 0, Math.PI*2); ctx.fillStyle = isPossible ? '#818cf8' : '#ef4444'; ctx.fill();
+                    if (show4thRail) { ctx.beginPath(); ctx.arc(ptFourthRail.x, ptFourthRail.y, 7, 0, Math.PI*2); ctx.fillStyle = isPossible ? '#38bdf8' : '#ef4444'; ctx.fill(); }
+                    if(isPossible) CanvasUtils.drawPostImpact(ctx, ptThirdRail.x, ptThirdRail.y, targetObj.x, targetObj.y);
+                }
+
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, targetObj.radius + Math.sin(Date.now()/150)*4, 0, Math.PI*2); ctx.fillStyle = 'rgba(16, 185, 129, 0.4)'; ctx.fill();
+                ctx.beginPath(); ctx.arc(targetObj.x, targetObj.y, targetObj.radius - 4, 0, Math.PI*2); ctx.fillStyle = '#10b981'; ctx.fill();
+
+                trail.forEach((t, i) => { ctx.beginPath(); ctx.arc(t.x, t.y, ball.radius * 0.7, 0, Math.PI*2); ctx.fillStyle = `rgba(255, 255, 255, ${(i / trail.length) * 0.4})`; ctx.fill(); });
+                ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth=2; ctx.stroke();
+                
+                let spinAngle = Math.PI - 0.2; // Efecto 3 (ligeramente abajo de las 9h/3h)
+                let dotX = ball.x + Math.cos(spinAngle) * (ball.radius * 0.6); let dotY = ball.y + Math.sin(spinAngle) * (ball.radius * 0.6);
+                ctx.beginPath(); ctx.arc(dotX, dotY, 4, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
+                ctx.font = 'bold 10px Inter'; ctx.fillStyle = '#fff'; ctx.fillText('Efecto 3', ball.x - 30, ball.y - 15);
+                ctx.restore();
+            }
+
+            function animate() {
+                if (!isAnimating || !isActive || !isPossible) return;
+                animProgress += 0.03; trail.push({x: ball.x, y: ball.y}); if (trail.length > 25) trail.shift(); 
+                
+                if (animProgress <= 1) { ball.x = MathUtils.lerp(originalBallPos.x, ptAttack.x, animProgress); ball.y = MathUtils.lerp(originalBallPos.y, ptAttack.y, animProgress); } 
+                else if (animProgress <= 2) { let ap2 = animProgress - 1; ball.x = MathUtils.lerp(ptAttack.x, ptSecondRail.x, ap2); ball.y = MathUtils.lerp(ptAttack.y, ptSecondRail.y, ap2); } 
+                else if (animProgress <= 3) { let ap3 = animProgress - 2; ball.x = MathUtils.lerp(ptSecondRail.x, ptThirdRail.x, ap3); ball.y = MathUtils.lerp(ptSecondRail.y, ptThirdRail.y, ap3); }
+                else if (animProgress <= 4 && show4thRail) { let ap4 = animProgress - 3; ball.x = MathUtils.lerp(ptThirdRail.x, ptFourthRail.x, ap4); ball.y = MathUtils.lerp(ptThirdRail.y, ptFourthRail.y, ap4); }
+                else if (animProgress <= 4 && !show4thRail) { let ap4 = animProgress - 3; ball.x = MathUtils.lerp(ptThirdRail.x, targetObj.x, ap4); ball.y = MathUtils.lerp(ptThirdRail.y, targetObj.y, ap4); }
+                else {
+                    isAnimating = false; ball.x = show4thRail ? ptFourthRail.x : targetObj.x; ball.y = show4thRail ? ptFourthRail.y : targetObj.y;
+                    setTimeout(() => { ball.x = originalBallPos.x; ball.y = originalBallPos.y; trail = []; animProgress = 0; isAnimating = false; btnAnimar.classList.remove('hidden'); updateMath(); }, 1200);
+                    let fade = setInterval(() => { trail.shift(); if(trail.length===0) clearInterval(fade); }, 40);
+                }
+            }
+
+            canvas.addEventListener('mousedown', handleDown); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', () => draggedItem = null);
+            canvas.addEventListener('touchstart', handleDown, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchmove', handleMove, {passive: false}); window.addEventListener('touchend', () => draggedItem = null);
+            cuartaBandaToggle.addEventListener('change', e => { show4thRail = e.target.checked; updateMath(); });
+            gridToggle.addEventListener('change', e => { showGrid = e.target.checked; updateMath(); });
+            btnAnimar.addEventListener('click', () => { if(isAnimating || !isPossible) return; isAnimating = true; animProgress = 0; trail = []; originalBallPos = {x: ball.x, y: ball.y}; btnAnimar.classList.add('hidden'); });
+            function loop() { if(isActive) { if(isAnimating) animate(); draw(); } loopId = requestAnimationFrame(loop); }
+            return { init: () => { resetPositions(); loop(); }, pause: () => { isActive = false; cancelAnimationFrame(loopId); }, resume: () => { isActive = true; updateMath(); loop(); }, reset: resetPositions };
+        })();
+
+        // Iniciar
+        AppSimetria.init();
+        AppTriangulacion.init();
+        AppPlus.init();
+        AppSid.init();
+        AppBase50.init();
+        
+        // Empezar en la pestaña 1
+        switchTab('tab-simetria');
+    </script>
+</body>
+</html>
