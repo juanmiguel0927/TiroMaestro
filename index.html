@@ -2,29 +2,25 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- El zoom está activado (eliminado user-scalable=no) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suite Tiro Maestro</title>
-    <!-- Importamos Tailwind CSS para darle un diseño moderno y adaptable a móviles -->
+    <!-- Importamos Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Un poco de estilo extra para suavizar los cambios de pantalla */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            overflow: hidden; /* Evita barras de desplazamiento innecesarias en el fondo */
+            overflow: hidden; 
             box-sizing: border-box;
             
-            /* Optimización para móviles: Altura dinámica y bordes más finos */
-            height: 100vh; /* Respaldo para navegadores antiguos */
-            height: 100dvh; /* Altura dinámica para que no se corte en móviles */
+            height: 100vh; 
+            height: 100dvh; 
             width: 100vw;
-            border: 10px solid #4a2e15; /* Marco de madera más delgado para móviles */
+            border: 10px solid #4a2e15; 
             box-shadow: inset 0 0 25px rgba(0,0,0,0.8); 
-            animation: panoCambiante 15s infinite ease-in-out; /* 3 colores x 5s cada uno = 15s */
+            animation: panoCambiante 15s infinite ease-in-out; 
         }
 
-        /* En pantallas más grandes (tablets y PC), el marco vuelve a ser grueso */
         @media (min-width: 640px) {
             body {
                 border-width: 20px;
@@ -32,12 +28,21 @@
             }
         }
 
-        /* Animación para cambiar el color del paño suavemente (transición continua) */
         @keyframes panoCambiante {
-            0% { background-color: #0b6623; }   /* Verde clásico */
-            33% { background-color: #0f52ba; }  /* Azul de torneo */
-            66% { background-color: #8b0000; }  /* Rojo vino oscuro */
-            100% { background-color: #0b6623; } /* Vuelve al verde clásico suavemente */
+            0% { background-color: #0b6623; }   
+            33% { background-color: #0f52ba; }  
+            66% { background-color: #8b0000; }  
+            100% { background-color: #0b6623; } 
+        }
+
+        /* Ocultar los bordes de madera cuando la suite completa entra en fullscreen */
+        :fullscreen body {
+            border: none;
+            box-shadow: none;
+        }
+        :-webkit-full-screen body {
+            border: none;
+            box-shadow: none;
         }
     </style>
 </head>
@@ -46,44 +51,35 @@
     <!-- ========================================== -->
     <!-- 1. CONTENEDOR DEL MENÚ PRINCIPAL           -->
     <!-- ========================================== -->
-    <!-- Agregamos un ligero fondo oscuro (bg-black/20) para que las tarjetas resalten más sobre el paño -->
-    <!-- Ajustamos padding para móviles (p-4) y pantallas grandes (sm:p-6) -->
     <div id="menu-container" class="h-full w-full flex flex-col items-center p-4 sm:p-6 overflow-y-auto bg-black/20">
         
         <header class="text-center mb-6 sm:mb-10 mt-4 sm:mt-8">
-            <!-- Título adaptable: text-4xl en móvil, text-5xl en pantallas grandes -->
             <h1 class="text-4xl sm:text-5xl font-bold text-yellow-400 mb-2 leading-tight" style="text-shadow: 2px 2px 6px rgba(0,0,0,0.8);">Suite Tiro Maestro</h1>
             <p class="text-gray-100 text-base sm:text-lg font-medium" style="text-shadow: 1px 1px 4px rgba(0,0,0,0.8);">Selecciona una plataforma</p>
         </header>
 
-        <!-- Cuadrícula de opciones (se adapta en móviles y computadoras, gap más pequeño en móvil) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full max-w-5xl">
             
-            <!-- Opción 1 -->
             <button onclick="abrirPlataforma('https://juanmiguel0927.github.io/SistemaDeDiamantes/')" class="bg-white p-4 sm:p-6 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center border-t-4 border-blue-500 active:scale-95">
                 <span class="text-3xl sm:text-4xl mb-2 sm:mb-3">💎</span>
                 <h2 class="text-lg sm:text-xl font-semibold text-gray-800 text-center">Sistema de Diamantes</h2>
             </button>
 
-            <!-- Opción 2 -->
             <button onclick="abrirPlataforma('https://juanmiguel0927.github.io/ExamenPool/')" class="bg-white p-4 sm:p-6 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center border-t-4 border-green-500 active:scale-95">
                 <span class="text-3xl sm:text-4xl mb-2 sm:mb-3">📝</span>
                 <h2 class="text-lg sm:text-xl font-semibold text-gray-800 text-center">Examen Pool</h2>
             </button>
 
-            <!-- Opción 3 -->
             <button onclick="abrirPlataforma('https://juanmiguel0927.github.io/Pool/')" class="bg-white p-4 sm:p-6 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center border-t-4 border-red-500 active:scale-95">
                 <span class="text-3xl sm:text-4xl mb-2 sm:mb-3">🎱</span>
                 <h2 class="text-lg sm:text-xl font-semibold text-gray-800 text-center">Entrenamientos</h2>
             </button>
 
-            <!-- Opción 4 -->
             <button onclick="abrirPlataforma('https://juanmiguel0927.github.io/Tecnica/')" class="bg-white p-4 sm:p-6 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center border-t-4 border-purple-500 active:scale-95">
                 <span class="text-3xl sm:text-4xl mb-2 sm:mb-3">🎯</span>
                 <h2 class="text-lg sm:text-xl font-semibold text-gray-800 text-center">Técnica</h2>
             </button>
 
-            <!-- Opción 5 -->
             <button onclick="abrirPlataforma('https://juanmiguel0927.github.io/BandasPool/')" class="bg-white p-4 sm:p-6 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center border-t-4 border-yellow-500 active:scale-95">
                 <span class="text-3xl sm:text-4xl mb-2 sm:mb-3">🔄</span>
                 <h2 class="text-lg sm:text-xl font-semibold text-gray-800 text-center">Herramientas de Entrenamiento</h2>
@@ -91,9 +87,6 @@
 
         </div>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN DE CRÉDITOS                        -->
-        <!-- ========================================== -->
         <footer class="mt-auto pt-8 sm:pt-12 pb-2 text-center w-full">
             <p class="text-gray-200 text-xs sm:text-sm font-medium tracking-wide" style="text-shadow: 1px 1px 4px rgba(0,0,0,0.9);">
                 &copy; <span id="anio-actual"></span> Desarrollado por Juan Miguel Rios Redondo<br class="block sm:hidden"> | Suite Tiro Maestro
@@ -106,65 +99,104 @@
     <!-- ========================================== -->
     <!-- 2. CONTENEDOR DEL VISOR (IFRAME)           -->
     <!-- ========================================== -->
-    <!-- Por defecto tiene la clase 'hidden' para que no se vea al inicio -->
-    <div id="visor-container" class="hidden h-full w-full flex flex-col bg-white">
+    <div id="visor-container" class="hidden h-full w-full flex flex-col bg-white relative">
         
-        <!-- Barra superior de navegación optimizada para espacio móvil -->
-        <div class="bg-slate-800 text-white p-2 sm:p-3 flex items-center justify-between shadow-md z-10">
+        <!-- Barra superior de navegación (Se le agregó un ID para poder ocultarla) -->
+        <div id="barra-superior" class="bg-slate-800 text-white p-2 sm:p-3 flex items-center justify-between shadow-md z-10 transition-all duration-300">
             <button onclick="volverAlMenu()" class="flex items-center gap-1 sm:gap-2 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors font-medium text-xs sm:text-sm">
                 <span>⬅️</span> <span class="hidden sm:inline">Volver al inicio</span><span class="sm:hidden">Volver</span>
             </button>
-            <span id="titulo-plataforma" class="font-semibold text-xs sm:text-sm truncate opacity-80 mr-2 sm:mr-4">
-                Cargando...
-            </span>
+            
+            <div class="flex items-center gap-3">
+                <span id="titulo-plataforma" class="font-semibold text-xs sm:text-sm truncate opacity-80">
+                    Cargando...
+                </span>
+                <!-- Botón global de pantalla completa -->
+                <button onclick="alternarPantallaCompleta()" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 p-1.5 sm:p-2 rounded-lg transition-colors" title="Pantalla Completa">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                </button>
+            </div>
         </div>
 
-        <!-- El "marco" donde se cargará la otra página web -->
-        <!-- Se asegura de que tome el espacio restante sin bordes -->
-        <iframe id="marco-app" class="w-full flex-grow border-none" src=""></iframe>
+        <iframe id="marco-app" class="w-full flex-grow border-none" src="" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
         
+        <!-- Botón flotante para salir de pantalla completa (oculto por defecto) -->
+        <button id="btn-salir-fullscreen" onclick="salirPantallaCompleta()" class="hidden absolute bottom-6 right-6 z-50 bg-slate-800/80 text-white p-3 sm:p-4 rounded-full shadow-2xl backdrop-blur-sm border border-slate-600 hover:bg-slate-700 transition-all" title="Salir de pantalla completa">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5M15 15l5.25 5.25" />
+            </svg>
+        </button>
+
     </div>
 
     <!-- ========================================== -->
     <!-- 3. LÓGICA DE PROGRAMACIÓN (JAVASCRIPT)     -->
     <!-- ========================================== -->
     <script>
-        // Establecer el año actual de forma automática al cargar la página
         document.getElementById('anio-actual').textContent = new Date().getFullYear();
 
-        // Esta función se ejecuta al hacer clic en un botón del menú
         function abrirPlataforma(urlDestino) {
-            // 1. Obtenemos los elementos de la pantalla
             const menu = document.getElementById('menu-container');
             const visor = document.getElementById('visor-container');
             const marco = document.getElementById('marco-app');
             const titulo = document.getElementById('titulo-plataforma');
 
-            // 2. Le pasamos el enlace al iframe
             marco.src = urlDestino;
-            
-            // 3. Mostramos la URL en la barra (opcional, para dar feedback visual)
             titulo.textContent = "Plataforma en uso";
 
-            // 4. Ocultamos el menú y mostramos el visor
             menu.classList.add('hidden');
             visor.classList.remove('hidden');
         }
 
-        // Esta función se ejecuta al hacer clic en "Volver"
         function volverAlMenu() {
-            // 1. Obtenemos los elementos de la pantalla
             const menu = document.getElementById('menu-container');
             const visor = document.getElementById('visor-container');
             const marco = document.getElementById('marco-app');
 
-            // 2. Limpiamos el iframe para que no consuma recursos en el fondo
-            marco.src = "";
+            // Salir de pantalla completa si está activa al volver al menú
+            if (document.fullscreenElement) {
+                salirPantallaCompleta();
+            }
 
-            // 3. Ocultamos el visor y mostramos el menú principal nuevamente
+            marco.src = "";
             visor.classList.add('hidden');
             menu.classList.remove('hidden');
         }
+
+        // --- Lógica de Pantalla Completa Mejorada --- //
+
+        function alternarPantallaCompleta() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error al intentar pantalla completa: ${err.message}`);
+                });
+            }
+        }
+
+        function salirPantallaCompleta() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(err => console.log(err));
+            }
+        }
+
+        // Este "escuchador" detecta automáticamente cuando entras o sales de la pantalla completa
+        // sin importar si lo hiciste con un botón o con la tecla ESC
+        document.addEventListener('fullscreenchange', (event) => {
+            const barraSuperior = document.getElementById('barra-superior');
+            const btnSalirFs = document.getElementById('btn-salir-fullscreen');
+            
+            if (document.fullscreenElement) {
+                // Si la pantalla completa ESTÁ activa: ocultar barra superior, mostrar botón flotante
+                barraSuperior.classList.add('hidden');
+                btnSalirFs.classList.remove('hidden');
+            } else {
+                // Si la pantalla completa NO está activa: mostrar barra superior, ocultar botón flotante
+                barraSuperior.classList.remove('hidden');
+                btnSalirFs.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
